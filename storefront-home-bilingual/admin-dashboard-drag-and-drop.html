@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Medical Admin Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0054a3",
+                        "background-light": "#f5f7f8",
+                        "background-dark": "#0f1923",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100">
+<div class="flex min-h-screen">
+<!-- Sidebar -->
+<aside class="w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col fixed h-full z-40">
+<div class="p-6">
+<div class="flex items-center gap-2 text-primary font-bold text-xl">
+<span class="material-symbols-outlined text-3xl">medical_services</span>
+<span>MedAdmin</span>
+</div>
+</div>
+<nav class="flex-1 px-4 space-y-2">
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-medium">Overview</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="font-medium">Products</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 bg-primary text-white rounded-lg transition-colors shadow-md shadow-primary/20" href="#">
+<span class="material-symbols-outlined">account_tree</span>
+<span class="font-medium">Categories</span>
+</a>
+<a class="flex items-center justify-between px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary rounded-lg transition-colors" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined">shopping_cart</span>
+<span class="font-medium">Orders</span>
+</div>
+<span class="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">12</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">reviews</span>
+<span class="font-medium">Reviews</span>
+</a>
+</nav>
+<div class="p-4 mt-auto">
+<div class="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
+<p class="text-xs text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider font-bold">Admin Only Access</p>
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">admin_panel_settings</span>
+</div>
+<div class="overflow-hidden">
+<p class="text-sm font-bold truncate">Dr. Sarah Smith</p>
+<p class="text-[11px] text-slate-500">Super Admin</p>
+</div>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 ml-64 p-8">
+<!-- Top Header -->
+<header class="flex justify-between items-center mb-8">
+<div>
+<h1 class="text-2xl font-bold text-slate-900 dark:text-white">Category Management</h1>
+<p class="text-slate-500 text-sm">Organize how customers see your medical supplies.</p>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+<input class="pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none text-sm w-64" placeholder="Search resources..." type="text"/>
+</div>
+<button class="relative p-2 text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg hover:bg-slate-50">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
+</button>
+<button class="bg-primary text-white px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-primary/90 transition-all">
+<span class="material-symbols-outlined text-lg">add</span>
+                        New Category
+                    </button>
+</div>
+</header>
+<!-- Stats Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-primary/10 text-primary rounded-lg">
+<span class="material-symbols-outlined">payments</span>
+</div>
+<span class="text-xs font-bold text-green-500">+12.5%</span>
+</div>
+<p class="text-slate-500 text-sm font-medium">Total Sales</p>
+<p class="text-2xl font-bold mt-1">$45,280</p>
+</div>
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-blue-100 text-blue-600 rounded-lg">
+<span class="material-symbols-outlined">group</span>
+</div>
+<span class="text-xs font-bold text-green-500">+5.2%</span>
+</div>
+<p class="text-slate-500 text-sm font-medium">New Users</p>
+<p class="text-2xl font-bold mt-1">1,240</p>
+</div>
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-amber-100 text-amber-600 rounded-lg">
+<span class="material-symbols-outlined">pending_actions</span>
+</div>
+<span class="text-xs font-bold text-slate-400">Stable</span>
+</div>
+<p class="text-slate-500 text-sm font-medium">Pending Orders</p>
+<p class="text-2xl font-bold mt-1">48</p>
+</div>
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-purple-100 text-purple-600 rounded-lg">
+<span class="material-symbols-outlined">star</span>
+</div>
+<span class="text-xs font-bold text-green-500">+2.4%</span>
+</div>
+<p class="text-slate-500 text-sm font-medium">Average Rating</p>
+<p class="text-2xl font-bold mt-1">4.8</p>
+</div>
+</div>
+<!-- Drag and Drop Interface -->
+<section class="mb-8">
+<div class="flex items-center justify-between mb-4">
+<h2 class="text-lg font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">drag_indicator</span>
+                        Category Reordering
+                    </h2>
+<span class="text-xs text-slate-500 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">Drag cards to reorder appearance on website</span>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+<!-- Category Card 1 -->
+<div class="group relative bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm hover:border-primary/50 cursor-move transition-all">
+<div class="flex items-start justify-between">
+<div class="flex gap-4">
+<div class="w-16 h-16 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden">
+<img alt="Surgical Tools" class="w-full h-full object-cover" data-alt="Close up of surgical stainless steel instruments" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBSEHDiNSlrTAPuwdHKzTdLPWYqQqZ6Q-LavlGI_aSzhfY8D350opMpCYXXrTZFgZq1tfNlZOwmlOxUTw1yQwhWvKx6GwVI1VPy2JMeOSfWLDrIZgaZ6JXjbowCtHSgssB7FpLsECemPH9stcfAkHfumdZkVxM2sS9Za_ce8r_wNmh3XrBINH8Fne_QzU1r893WJYmw19sA7-Bg9v1uo7BBqHN4xSpNNMonhzmAh1oPiUVE5NzbhNvIRltjoXpuo3aaRyJImrTn1KQ"/>
+</div>
+<div>
+<h3 class="font-bold text-sm">Surgical Equipment</h3>
+<p class="text-xs text-slate-500 mt-1">124 Items Active</p>
+<div class="mt-2 flex gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+<span class="text-[10px] text-slate-400 uppercase font-bold tracking-tighter">Visibility: On</span>
+</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-slate-300 group-hover:text-primary transition-colors">drag_handle</span>
+</div>
+</div>
+<!-- Category Card 2 -->
+<div class="group relative bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm hover:border-primary/50 cursor-move transition-all">
+<div class="flex items-start justify-between">
+<div class="flex gap-4">
+<div class="w-16 h-16 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden">
+<img alt="Diagnostics" class="w-full h-full object-cover" data-alt="Medical diagnostic monitor and equipment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVRsS0zVeT8Ppi-d9m4lKnD7AbqCUxruyNj6C2YhH-QsShhjJHr5QJyC4CguEJ5XdFHO2hMTIpyKaNk_ifKnN907vXuX-GqRoWhjv2HjbhgJbVo_mc5uHaQPvxPFMF9TAk8gtZyfgBpAK9-tWUalu2d6EXRgZUvNwDugskYhTITW5InorxoXEjN_76YIK2w877sAqf3WHL7ZSDlT2dBQuMJiPBi8ftSJuP3CxR9Hhdrf7wrj5F76w-FJ1PRiuRb9bbKOesTFmJOTQ"/>
+</div>
+<div>
+<h3 class="font-bold text-sm">Diagnostics &amp; Labs</h3>
+<p class="text-xs text-slate-500 mt-1">86 Items Active</p>
+<div class="mt-2 flex gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+<span class="text-[10px] text-slate-400 uppercase font-bold tracking-tighter">Visibility: On</span>
+</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-slate-300 group-hover:text-primary transition-colors">drag_handle</span>
+</div>
+</div>
+<!-- Category Card 3 -->
+<div class="group relative bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm hover:border-primary/50 cursor-move transition-all">
+<div class="flex items-start justify-between">
+<div class="flex gap-4">
+<div class="w-16 h-16 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden">
+<img alt="Pharmaceuticals" class="w-full h-full object-cover" data-alt="Shelves filled with various medicine bottles" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAEFoA5UMZRC0158i8cnsxzsKhIOKJMIPjVKDh18VnyO3da3ZveouFT8j2_lZpObWkQ_YvfO7GsdnpKMvlcXJvQ1dOVPFefTY28OjgeETPP2rQg5P9g7yOEem3fQUPz1xFFsujXVNHzgCMw9tkCAPDePzPLR_PV6F4qoZMP4lNe8mql0K45cxEJ9lxkBYxtwYW4_j9AgxZ81q-AMmV3ULQwvOTt-BkoGJpwWAaCrLIjTbbXObxLCBi6rBOmmLj8_YCjUWGfGDD2-yY"/>
+</div>
+<div>
+<h3 class="font-bold text-sm">Pharmaceuticals</h3>
+<p class="text-xs text-slate-500 mt-1">312 Items Active</p>
+<div class="mt-2 flex gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+<span class="text-[10px] text-slate-400 uppercase font-bold tracking-tighter">Visibility: Draft</span>
+</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-slate-300 group-hover:text-primary transition-colors">drag_handle</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Products Table Section -->
+<section class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+<div class="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+<h2 class="text-lg font-bold">Recent Products</h2>
+<div class="flex gap-2">
+<button class="text-xs font-bold text-primary hover:underline">View All</button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 text-xs uppercase font-bold">
+<tr>
+<th class="px-6 py-4">Product Name</th>
+<th class="px-6 py-4">Category</th>
+<th class="px-6 py-4">Stock</th>
+<th class="px-6 py-4">Price</th>
+<th class="px-6 py-4">Status</th>
+<th class="px-6 py-4 text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-200 dark:divide-slate-800 text-sm">
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-slate-100 dark:bg-slate-800 flex-shrink-0"></div>
+<span class="font-bold">Digital Sphygmomanometer</span>
+</div>
+</td>
+<td class="px-6 py-4 text-slate-500">Diagnostics</td>
+<td class="px-6 py-4">
+<span class="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 px-2 py-0.5 rounded text-xs font-medium">85 Units</span>
+</td>
+<td class="px-6 py-4 font-bold text-slate-700 dark:text-slate-300">$120.00</td>
+<td class="px-6 py-4">
+<span class="flex items-center gap-1.5 text-green-600">
+<span class="w-1.5 h-1.5 rounded-full bg-current"></span>
+                                        Active
+                                    </span>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end gap-2">
+<button class="p-1.5 text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-lg">edit</span>
+</button>
+<button class="p-1.5 text-slate-400 hover:text-red-500 transition-colors">
+<span class="material-symbols-outlined text-lg">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-slate-100 dark:bg-slate-800 flex-shrink-0"></div>
+<span class="font-bold">Sterile Scalpel Blades (Size 11)</span>
+</div>
+</td>
+<td class="px-6 py-4 text-slate-500">Surgical</td>
+<td class="px-6 py-4">
+<span class="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 px-2 py-0.5 rounded text-xs font-medium">12 Units (Low)</span>
+</td>
+<td class="px-6 py-4 font-bold text-slate-700 dark:text-slate-300">$45.50</td>
+<td class="px-6 py-4">
+<span class="flex items-center gap-1.5 text-green-600">
+<span class="w-1.5 h-1.5 rounded-full bg-current"></span>
+                                        Active
+                                    </span>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end gap-2">
+<button class="p-1.5 text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-lg">edit</span>
+</button>
+<button class="p-1.5 text-slate-400 hover:text-red-500 transition-colors">
+<span class="material-symbols-outlined text-lg">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-slate-100 dark:bg-slate-800 flex-shrink-0"></div>
+<span class="font-bold">Insulin Syringes 1ml</span>
+</div>
+</td>
+<td class="px-6 py-4 text-slate-500">Pharmaceuticals</td>
+<td class="px-6 py-4">
+<span class="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 px-2 py-0.5 rounded text-xs font-medium">500 Units</span>
+</td>
+<td class="px-6 py-4 font-bold text-slate-700 dark:text-slate-300">$18.99</td>
+<td class="px-6 py-4">
+<span class="flex items-center gap-1.5 text-slate-400">
+<span class="w-1.5 h-1.5 rounded-full bg-current"></span>
+                                        Inactive
+                                    </span>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end gap-2">
+<button class="p-1.5 text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-lg">edit</span>
+</button>
+<button class="p-1.5 text-slate-400 hover:text-red-500 transition-colors">
+<span class="material-symbols-outlined text-lg">delete</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/30 flex items-center justify-between">
+<span class="text-xs text-slate-500">Showing 3 of 152 products</span>
+<div class="flex gap-2">
+<button class="px-3 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded text-xs hover:bg-slate-50">Previous</button>
+<button class="px-3 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded text-xs hover:bg-slate-50">Next</button>
+</div>
+</div>
+</section>
+</main>
+</div>
+<!-- Notification Toast (Example) -->
+<div class="fixed bottom-6 right-6 z-50">
+<div class="bg-white dark:bg-slate-900 border-l-4 border-primary shadow-xl rounded-lg p-4 flex items-start gap-4 max-w-sm animate-bounce-subtle">
+<div class="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined">shopping_basket</span>
+</div>
+<div>
+<p class="font-bold text-sm">New Order Received!</p>
+<p class="text-xs text-slate-500 mt-1">Order #ORD-8829 just came in for $299.00</p>
+<div class="mt-2 flex gap-3">
+<button class="text-xs font-bold text-primary">View Order</button>
+<button class="text-xs font-bold text-slate-400">Dismiss</button>
+</div>
+</div>
+</div>
+</div>
+</body></html>

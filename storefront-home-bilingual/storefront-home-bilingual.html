@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+
+<html dir="ltr" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0054a3",
+                        "background-light": "#f5f7f8",
+                        "background-dark": "#0f1923",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Manrope', sans-serif; }
+        .rtl { direction: rtl; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display">
+<!-- Header & Navigation -->
+<header class="sticky top-0 z-50 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
+<div class="max-w-7xl mx-auto px-4">
+<div class="flex items-center justify-between h-16">
+<!-- Logo & Menu Trigger -->
+<div class="flex items-center gap-4">
+<button class="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<div class="flex items-center gap-2">
+<div class="bg-primary p-1.5 rounded-lg text-white">
+<span class="material-symbols-outlined text-2xl">medical_services</span>
+</div>
+<h1 class="text-xl font-bold tracking-tight text-primary">MedStore</h1>
+</div>
+</div>
+<!-- Desktop Nav -->
+<nav class="hidden md:flex items-center gap-8">
+<a class="text-sm font-bold border-b-2 border-primary pb-1" href="#">B2C Store</a>
+<a class="text-sm font-medium text-slate-500 hover:text-primary transition-colors" href="#">B2B Wholesale</a>
+<a class="text-sm font-medium text-slate-500 hover:text-primary transition-colors" href="#">Services</a>
+</nav>
+<!-- Actions -->
+<div class="flex items-center gap-3">
+<button class="flex items-center gap-1 px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold transition-all">
+<span class="material-symbols-outlined text-sm">language</span>
+                        EN/AR
+                    </button>
+<button class="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg relative">
+<span class="material-symbols-outlined">shopping_cart</span>
+<span class="absolute top-1 right-1 bg-primary text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">3</span>
+</button>
+<button class="hidden sm:block p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">
+<span class="material-symbols-outlined">person</span>
+</button>
+</div>
+</div>
+</div>
+</header>
+<!-- Search Bar Section -->
+<div class="bg-white dark:bg-slate-900 px-4 py-4 shadow-sm">
+<div class="max-w-3xl mx-auto">
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 group-focus-within:text-primary">
+<span class="material-symbols-outlined">search</span>
+</div>
+<input class="block w-full pl-10 pr-4 py-3 bg-slate-100 dark:bg-slate-800 border-none rounded-xl focus:ring-2 focus:ring-primary text-sm" placeholder="Search for MRI machines, surgical tools, or personal health kits..." type="text"/>
+</div>
+</div>
+</div>
+<!-- Hero Section -->
+<section class="max-w-7xl mx-auto px-4 py-6">
+<div class="relative overflow-hidden rounded-2xl aspect-[21/9] bg-slate-800">
+<img alt="Modern hospital equipment" class="absolute inset-0 w-full h-full object-cover opacity-60" data-alt="Interior of a modern high-tech medical laboratory" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA588kmX3DwQmk8CXW0UBebTd55zzzhpA7mMy0ju3f0kv_c8ix9FzrrrgA9f3va_PFneZYJz2F-ZyfvdJgwFY6UXBSf06L8REpaxm9ppZev9Ut6_9_ZfA1I5rcJbLsgB6se5hQGpwIbaVNJSUr6_n0Q8BE5l7l5awJ_VBBzTEEBIENQtZbnrVAm0jbGIEPBwHvCPkTZHlhXl-RWE0blFZelR_qoOpXGD5As0asfd8vt8QL3-9VyrfoXPb93TKh0AC3NLo5Ccak8uPo"/>
+<div class="absolute inset-0 bg-gradient-to-r from-primary/80 to-transparent flex flex-col justify-center px-8 md:px-16">
+<span class="text-white/80 font-bold tracking-widest text-xs uppercase mb-2">Exclusive Offer</span>
+<h2 class="text-3xl md:text-5xl font-extrabold text-white max-w-lg leading-tight">
+                    Professional Medical <br/> Solutions for Clinics
+                </h2>
+<p class="text-white/90 mt-4 max-w-md hidden md:block">
+                    Equip your healthcare facility with world-class diagnostic and surgical tools. Certified quality, global shipping.
+                </p>
+<div class="mt-8 flex gap-4">
+<button class="bg-white text-primary px-6 py-3 rounded-lg font-bold hover:bg-slate-100 transition-all shadow-lg">Shop Now</button>
+<button class="bg-primary/20 backdrop-blur-md text-white border border-white/30 px-6 py-3 rounded-lg font-bold hover:bg-primary/40 transition-all">Bulk Quotes</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Category Section -->
+<section class="max-w-7xl mx-auto px-4 py-12">
+<div class="flex items-end justify-between mb-8">
+<div>
+<h3 class="text-2xl font-bold">Shop by Category</h3>
+<div class="h-1 w-12 bg-primary mt-2"></div>
+</div>
+<a class="text-primary font-bold text-sm hover:underline" href="#">View All Categories</a>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+<!-- Diagnostic -->
+<div class="group cursor-pointer">
+<div class="aspect-square rounded-xl overflow-hidden bg-white shadow-sm border border-slate-100 mb-3 group-hover:shadow-md transition-shadow">
+<img alt="Diagnostic tools" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Stethoscope and blood pressure monitor on table" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDF1UEv8ClxzrpZ9XyunyMtZf7LiXJnrUf_slzJohm3zRBdOJCZ4OFNtDe2hkfjnFJToWkEyzgcgdNMtYv-UpakMC3wCopM9cPp1dyQReurW-ksF0BR0qyTxrLkCMc2uo1kqT-JXDiL0mNax0crQRTIj8-SVj48KqS0NAeTd7wy2K-jL-nurBzbRaq4jB91YvK6AEh6IMNrRM684YvOSZ07XSWhzSESNl7F9pir5pXIHCgbp2_aTeNJdaj3JclslBnYkUst1CtOLgE"/>
+</div>
+<h4 class="font-bold text-center">Diagnostic Tools</h4>
+</div>
+<!-- Surgical -->
+<div class="group cursor-pointer">
+<div class="aspect-square rounded-xl overflow-hidden bg-white shadow-sm border border-slate-100 mb-3 group-hover:shadow-md transition-shadow">
+<img alt="Surgical instruments" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Stainless steel surgical instruments in tray" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDk_v2ijFJ_tk2Wg0U0q8CSw-_MKAvWbIhEc0hxe71aiSm-IoqTqy-vGy9Gy1oc1bPVLWpd9LNFlbt6XIqiors2hKlC6UeWB_iv-u2qhf9s7CJaC3vPGk1rxYp10Rt9cPii1MXSZPmd0Fo-gjbOjyraRJqHHgAcH_wZBU74vtGdFVdofahlcttQ9K5Ez7ljn4Ih4-BzOCOcb1AtpH0cyU2VJSx3djSdLKFlY-d-XdbARm0FUE0aQ9cJqG-P-4ti7kYGA7t0dgnCkcA"/>
+</div>
+<h4 class="font-bold text-center">Surgical Equipment</h4>
+</div>
+<!-- Personal Care -->
+<div class="group cursor-pointer">
+<div class="aspect-square rounded-xl overflow-hidden bg-white shadow-sm border border-slate-100 mb-3 group-hover:shadow-md transition-shadow">
+<img alt="Personal care" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Thermometer and first aid kit boxes" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCUvGZJp5F4auDAWlj5YtdDIMJZp8UCsq1gpp67A-IgltUE79gc0mOoGdM36OoNzlUJuBCx4sAmGdZp1Ix48W4x6GFS1pgsX6IxFzpU7E4zY6M_zAZKBMthPUds63wOjLPBjUbQc89Ww8xaDS6HAUivEPi1Kz_BCxlFpB5Rd0GfUyeVLG1op7b_GRQi7EAUn_Z1fBoa1YR1lXJn3zkHBnZ-OLhw_6itGOzkK16ft8PHx3XycYMUWNQ6sXV5vQhYGcug38RgFrfLci4"/>
+</div>
+<h4 class="font-bold text-center">Personal Health Care</h4>
+</div>
+<!-- Laboratory -->
+<div class="group cursor-pointer">
+<div class="aspect-square rounded-xl overflow-hidden bg-white shadow-sm border border-slate-100 mb-3 group-hover:shadow-md transition-shadow">
+<img alt="Lab equipment" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Microscope and laboratory test tubes" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA5vgT6g89W4llskFomtiXh_OYmetHRCbqFnaWaC-ul1kazlyvlep2AEHUc6hNoDhKAhExnaEd-hEfoBLGzeidptLVvEUKXAcy1Z_UivH647lx50C2H4Kdk-HA6HL34bIzdyUL40Q7usrMHcBXurUpT8O5OJwJcxEkVOEfpTno5hdpwUsLnlJ4OuZDhXN6sI8KCT0vzaHp0eyI6qANolxsfKRyFHOsahqXkAnGjnQdYNNjeoS7AabiI2rHtON4a7I8NM2w5v_883hY"/>
+</div>
+<h4 class="font-bold text-center">Laboratory Kits</h4>
+</div>
+</div>
+</section>
+<!-- Best Sellers -->
+<section class="bg-primary/5 py-16">
+<div class="max-w-7xl mx-auto px-4">
+<div class="flex items-center justify-between mb-8">
+<h3 class="text-2xl font-bold">Best Sellers</h3>
+<div class="flex gap-2">
+<button class="p-2 rounded-full bg-white border border-slate-200 text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="p-2 rounded-full bg-white border border-slate-200 text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+<!-- Product Card 1 -->
+<div class="bg-white dark:bg-slate-900 rounded-xl p-4 border border-slate-100 shadow-sm hover:shadow-xl transition-all">
+<div class="relative mb-4">
+<span class="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded">HOT SALE</span>
+<img alt="Smart Watch" class="w-full h-48 object-contain" data-alt="Digital pulse oximeter on a finger" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDE0gB72xHzyRX2hDnuGw9y7APaPvKbSZ8tW1pnN-3d7iaAhRCHINBjBJx5tAAwZ0xxZEXTh5brz6AXYbdvTSSaSbjFTDonlAXy4iwZB_Z4eSTl-NglSVQfv1H1hnEPFOMGJh-3Cb8ViQiaAr6cPNa8nAnwGhFC3esDZXOmfhrzxGq-9paW-RI5KFNQfjNx_WTo7Zn5qqq4LR9edByqI5DZo5ljeMiqKIjp6dpajEaUzHydEMF7zA3_LYJCSwC2BSUVgXF8YjzB2xE"/>
+</div>
+<div class="flex items-center gap-1 mb-1">
+<span class="material-symbols-outlined text-sm text-yellow-400 fill-current">star</span>
+<span class="material-symbols-outlined text-sm text-yellow-400 fill-current">star</span>
+<span class="material-symbols-outlined text-sm text-yellow-400 fill-current">star</span>
+<span class="material-symbols-outlined text-sm text-yellow-400 fill-current">star</span>
+<span class="material-symbols-outlined text-sm text-yellow-400 fill-current">star</span>
+<span class="text-[10px] text-slate-400 ml-1">(128)</span>
+</div>
+<h5 class="font-bold text-sm mb-1 truncate">Professional Pulse Oximeter</h5>
+<p class="text-xs text-slate-500 mb-3">Instant oxygen saturation monitoring</p>
+<div class="flex items-center justify-between">
+<span class="text-primary font-extrabold">$45.00</span>
+<button class="bg-primary text-white p-2 rounded-lg hover:bg-primary/90">
+<span class="material-symbols-outlined text-sm">add_shopping_cart</span>
+</button>
+</div>
+</div>
+<!-- Product Card 2 -->
+<div class="bg-white dark:bg-slate-900 rounded-xl p-4 border border-slate-100 shadow-sm hover:shadow-xl transition-all">
+<div class="relative mb-4">
+<img alt="Thermometer" class="w-full h-48 object-contain" data-alt="Non-contact infrared forehead thermometer" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDKBVFZxh7cYnW1FuMSF9YT-idmaC_dC1Y6odAUAkfcZam_1dizD6RfBjyXP3LSCbZKjKB06ij2QIfNy_HROZru5oaY30dcQs-vYPPAp_VXOYQ4NyO0-59GJq_WJoocziTUqOQXa_cqF3C-N09lDH8BjZU7lRBEx5Ib_EoEd_ugpN1s7BKrQ-CadkAc195l6G-X725BvJrriEiIxp13zhDDL7eD_SG3zGDA0iJ9FDoBVK5MZaUQQjc-G4WZvs12UdeTTAnCwXZQIsM"/>
+</div>
+<div class="flex items-center gap-1 mb-1">
+<span class="material-symbols-outlined text-sm text-yellow-400 fill-current">star</span>
+<span class="material-symbols-outlined text-sm text-yellow-400 fill-current">star</span>
+<span class="material-symbols-outlined text-sm text-yellow-400 fill-current">star</span>
+<span class="material-symbols-outlined text-sm text-yellow-400 fill-current">star</span>
+<span class="material-symbols-outlined text-sm text-slate-300">star</span>
+<span class="text-[10px] text-slate-400 ml-1">(94)</span>
+</div>
+<h5 class="font-bold text-sm mb-1 truncate">Infrared Forehead Thermometer</h5>
+<p class="text-xs text-slate-500 mb-3">Non-contact medical grade sensor</p>
+<div class="flex items-center justify-between">
+<span class="text-primary font-extrabold">$29.99</span>
+<button class="bg-primary text-white p-2 rounded-lg hover:bg-primary/90">
+<span class="material-symbols-outlined text-sm">add_shopping_cart</span>
+</button>
+</div>
+</div>
+<!-- Product Card 3 -->
+<div class="bg-white dark:bg-slate-900 rounded-xl p-4 border border-slate-100 shadow-sm hover:shadow-xl transition-all">
+<div class="relative mb-4">
+<img alt="Blood Pressure" class="w-full h-48 object-contain" data-alt="Automatic digital blood pressure monitor" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC71lOCpA2vGfKCNT46nBStPw01e5Ki8St6THDLwq2mNX3ndgIcljMFuaH_FwURiIItYpwlg9dYQbseIuIifES5e9kK-wI535qdfHJ1XMRygG8xNa4q2RLJo2c-VckPBz4n2XULehGDfGffxUC4z6HNpd81Nm-MtQgwa6C3ZMpOW1t6kwkbMXv78Xe1SJjC-Qwdu_5q5Ba3Jec1D37d4pVuy44fPxdnT0ejx3FJASoZpUrwViFYiRb5nLClVREluJNQRgiCdm9AYYo"/>
+</div>
+<div class="flex items-center gap-1 mb-1">
+<span class="material-symbols-outlined text-sm text-yellow-400 fill-current">star</span>
+<span class="material-symbols-outlined text-sm text-yellow-400 fill-current">star</span>
+<span class="material-symbols-outlined text-sm text-yellow-400 fill-current">star</span>
+<span class="material-symbols-outlined text-sm text-yellow-400 fill-current">star</span>
+<span class="material-symbols-outlined text-sm text-yellow-400 fill-current">star</span>
+<span class="text-[10px] text-slate-400 ml-1">(256)</span>
+</div>
+<h5 class="font-bold text-sm mb-1 truncate">Automatic Blood Pressure Monitor</h5>
+<p class="text-xs text-slate-500 mb-3">Large LCD with memory storage</p>
+<div class="flex items-center justify-between">
+<span class="text-primary font-extrabold">$89.50</span>
+<button class="bg-primary text-white p-2 rounded-lg hover:bg-primary/90">
+<span class="material-symbols-outlined text-sm">add_shopping_cart</span>
+</button>
+</div>
+</div>
+<!-- Product Card 4 -->
+<div class="bg-white dark:bg-slate-900 rounded-xl p-4 border border-slate-100 shadow-sm hover:shadow-xl transition-all">
+<div class="relative mb-4">
+<img alt="Stethoscope" class="w-full h-48 object-contain" data-alt="Classic professional medical stethoscope" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBTaB7g6tIX5hpSVWN2woUA9nDOiZZf0WkU68yHaciEY6Og6mf2ocmIDeGO5IBC8NAfmfIMwHIw6R9w-WCZA0CjTes9pVLTBEjSr5C931nRF2l3oR6O7Yymo8WWY9XrSVOEOfl7wLmchIbCDJgiv_NwXSolD-Uc42kRlr3-S7aV7Wnyo1MApKb62PV0zRnCxdL4_BG0MRjWps_f5hLtZv26h1tevd5jVVMF0q_jW31wzm-n4N7gNXnG9XqwGu454pV_yFQWo2o9J9k"/>
+</div>
+<div class="flex items-center gap-1 mb-1">
+<span class="material-symbols-outlined text-sm text-yellow-400 fill-current">star</span>
+<span class="material-symbols-outlined text-sm text-yellow-400 fill-current">star</span>
+<span class="material-symbols-outlined text-sm text-yellow-400 fill-current">star</span>
+<span class="material-symbols-outlined text-sm text-yellow-400 fill-current">star</span>
+<span class="material-symbols-outlined text-sm text-yellow-400 fill-current">star</span>
+<span class="text-[10px] text-slate-400 ml-1">(312)</span>
+</div>
+<h5 class="font-bold text-sm mb-1 truncate">Cardiology Stethoscope</h5>
+<p class="text-xs text-slate-500 mb-3">High acoustic sensitivity for adults</p>
+<div class="flex items-center justify-between">
+<span class="text-primary font-extrabold">$149.00</span>
+<button class="bg-primary text-white p-2 rounded-lg hover:bg-primary/90">
+<span class="material-symbols-outlined text-sm">add_shopping_cart</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- B2B Section -->
+<section class="max-w-7xl mx-auto px-4 py-16">
+<div class="bg-slate-900 rounded-3xl overflow-hidden flex flex-col md:flex-row">
+<div class="flex-1 p-8 md:p-12 flex flex-col justify-center">
+<div class="inline-flex items-center gap-2 bg-primary/20 text-primary px-3 py-1 rounded-full w-fit mb-6">
+<span class="material-symbols-outlined text-sm">business</span>
+<span class="text-xs font-bold uppercase tracking-wider">B2B Portal</span>
+</div>
+<h2 class="text-3xl md:text-4xl font-extrabold text-white mb-6">Equip Your Entire Medical Facility</h2>
+<p class="text-slate-400 mb-8 leading-relaxed">
+                    Get wholesale pricing, dedicated account managers, and priority fulfillment for hospitals, clinics, and government agencies. 
+                </p>
+<div class="grid grid-cols-2 gap-6 mb-8">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">verified_user</span>
+<span class="text-sm text-slate-300">Certified Equipment</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">local_shipping</span>
+<span class="text-sm text-slate-300">Global Logistics</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">contract</span>
+<span class="text-sm text-slate-300">Bulk Discounts</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">support_agent</span>
+<span class="text-sm text-slate-300">24/7 Tech Support</span>
+</div>
+</div>
+<button class="bg-primary hover:bg-primary/90 text-white font-bold py-4 px-8 rounded-xl transition-all w-fit">
+                    Join B2B Program
+                </button>
+</div>
+<div class="flex-1 bg-slate-800 relative min-h-[300px]">
+<img alt="Hospital corridor" class="absolute inset-0 w-full h-full object-cover opacity-70" data-alt="Clean futuristic hospital hallway with glass doors" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDOZyXTw6FlU0gwaQi-JET6eowfu63YiKHr2MblZ6iuQa_5DzGnvYf4xuBivWm2mp2SnIfFSV87byX2CP60x5wIRiIKvltfd71kT7wqAYDbckYy9Xz0ffn5oF_KjbxMG7Ym4nBpLq5gaXaKYc0Msn6jjwZZK-ekYPbdQWlUiJgEx6Ylu7OXqTMd_gdQlugup0tBhCpCXTmWaJq1vlBXM2nGSNag7C66TrTfwuaM58_--o7SqguFb4Krl1Xd1eSuCX4m0l-74POf2XI"/>
+</div>
+</div>
+</section>
+<!-- Newsletter -->
+<section class="max-w-7xl mx-auto px-4 pb-16">
+<div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 md:p-12 text-center shadow-sm">
+<h3 class="text-2xl font-bold mb-2">Subscribe to our Medical Journal</h3>
+<p class="text-slate-500 mb-8">Stay updated with the latest in medical technology and exclusive wholesale offers.</p>
+<form class="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto">
+<input class="flex-1 px-6 py-3 bg-slate-100 dark:bg-slate-800 border-none rounded-xl focus:ring-2 focus:ring-primary" placeholder="Enter your work email" type="email"/>
+<button class="bg-slate-900 dark:bg-primary text-white font-bold px-8 py-3 rounded-xl hover:opacity-90 transition-opacity">Subscribe</button>
+</form>
+</div>
+</section>
+<!-- Footer -->
+<footer class="bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-slate-900 pt-16 pb-8">
+<div class="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+<div class="col-span-1 md:col-span-1">
+<div class="flex items-center gap-2 mb-6">
+<div class="bg-primary p-1.5 rounded-lg text-white">
+<span class="material-symbols-outlined text-2xl">medical_services</span>
+</div>
+<h1 class="text-xl font-bold tracking-tight text-primary">MedStore</h1>
+</div>
+<p class="text-slate-500 text-sm leading-relaxed">
+                    Premium medical e-commerce solution providing global access to essential healthcare equipment and technologies.
+                </p>
+</div>
+<div>
+<h4 class="font-bold mb-6">Categories</h4>
+<ul class="space-y-4 text-sm text-slate-500">
+<li><a class="hover:text-primary transition-colors" href="#">Diagnostic Equipment</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Surgical Instruments</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Dental Care</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Rehabilitation</a></li>
+</ul>
+</div>
+<div>
+<h4 class="font-bold mb-6">Company</h4>
+<ul class="space-y-4 text-sm text-slate-500">
+<li><a class="hover:text-primary transition-colors" href="#">About Us</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">B2B Solutions</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Logistics</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Contact</a></li>
+</ul>
+</div>
+<div>
+<h4 class="font-bold mb-6">Help Center</h4>
+<ul class="space-y-4 text-sm text-slate-500">
+<li><a class="hover:text-primary transition-colors" href="#">Track Order</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Returns &amp; Refunds</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Certifications</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Terms of Service</a></li>
+</ul>
+</div>
+</div>
+<div class="max-w-7xl mx-auto px-4 border-t border-slate-100 dark:border-slate-900 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+<p class="text-slate-400 text-xs">© 2024 MedStore International. All rights reserved.</p>
+<div class="flex items-center gap-4">
+<div class="flex gap-4">
+<span class="material-symbols-outlined text-slate-300 cursor-pointer hover:text-primary">social_leaderboard</span>
+<span class="material-symbols-outlined text-slate-300 cursor-pointer hover:text-primary">linked_camera</span>
+<span class="material-symbols-outlined text-slate-300 cursor-pointer hover:text-primary">share</span>
+</div>
+</div>
+</div>
+</footer>
+<!-- Bottom Nav Bar (Mobile) -->
+<div class="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-lg border-t border-slate-200 flex md:hidden h-16 items-center px-4">
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-[10px] font-bold">Home</span>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined">grid_view</span>
+<span class="text-[10px] font-bold">Category</span>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined">shopping_bag</span>
+<span class="text-[10px] font-bold">Cart</span>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px] font-bold">Profile</span>
+</a>
+</div>
+</body></html>

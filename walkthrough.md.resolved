@@ -1,0 +1,41 @@
+# CMS Page Builder — Walkthrough
+
+## What Was Built
+
+A fully functional **Dynamic CMS Page Builder** integrated into the admin dashboard at the `CMS Builder` sidebar tab.
+
+## Changes Summary
+
+| File | Change |
+|------|--------|
+| **Supabase** `dynamic_pages` table | New table with JSONB content, RLS, 6 seeded pages |
+| [actions.ts](file:///c:/Users/Omar/Desktop/k3%20store/storefront-nextjs/app/%5Blocale%5D/admin/actions.ts) | +3 server actions: [saveDynamicPage](file:///c:/Users/Omar/Desktop/k3%20store/storefront-nextjs/app/%5Blocale%5D/admin/actions.ts#172-189), [createDynamicPage](file:///c:/Users/Omar/Desktop/k3%20store/storefront-nextjs/app/%5Blocale%5D/admin/actions.ts#190-210), [deleteDynamicPage](file:///c:/Users/Omar/Desktop/k3%20store/storefront-nextjs/app/%5Blocale%5D/admin/actions.ts#211-220) |
+| [page.tsx](file:///c:/Users/Omar/Desktop/k3%20store/storefront-nextjs/app/%5Blocale%5D/admin/page.tsx) | Fetches `dynamic_pages` and passes to [AdminLayout](file:///c:/Users/Omar/Desktop/k3%20store/storefront-nextjs/app/%5Blocale%5D/admin/client-components.tsx#50-266) |
+| [client-components.tsx](file:///c:/Users/Omar/Desktop/k3%20store/storefront-nextjs/app/%5Blocale%5D/admin/client-components.tsx) | Added `site-settings` tab type, sidebar entry, renders [SiteSettingsTab](file:///c:/Users/Omar/Desktop/k3%20store/storefront-nextjs/app/%5Blocale%5D/admin/site-settings-tab.tsx#303-655) |
+| [site-settings-tab.tsx](file:///c:/Users/Omar/Desktop/k3%20store/storefront-nextjs/app/%5Blocale%5D/admin/site-settings-tab.tsx) | **[NEW]** ~480-line CMS builder component |
+| [globals.css](file:///c:/Users/Omar/Desktop/k3%20store/storefront-nextjs/app/globals.css) | Added `.no-scrollbar` + toast animation |
+
+## Features Implemented
+
+- **Dynamic Page Tabs** — DB-driven (Home, About Us, B2B Portal, Products, Contact, Footer), `+` to add, trash to delete
+- **Section CRUD** — Add, delete, visibility toggle, up/down reorder
+- **Rich Text Editor** — Bold, Italic, Underline, Lists, **Link dialog** (with URL + display text), Image insert
+- **Media Upload** — Drag & drop to Supabase Storage `public_assets`, replace/remove overlay
+- **Save & Publish** — Upserts full JSONB to Supabase, success/error toast
+- **Discard Changes** — Resets to last DB state with confirmation
+- **Responsive** — Sticky action bar, mobile FAB, scrollable tabs
+
+## Verification
+
+![CMS Builder loaded with all UI elements](C:/Users/Omar/.gemini/antigravity/brain/c5ae8e55-e84e-4157-bf41-32a46f04fa9e/.system_generated/click_feedback/click_feedback_1773122171692.png)
+
+![CMS Builder full view with section, editor, and action bar](C:/Users/Omar/.gemini/antigravity/brain/c5ae8e55-e84e-4157-bf41-32a46f04fa9e/cms_builder_full_view_1773122202775.png)
+
+![Browser recording of CMS Builder test](C:/Users/Omar/.gemini/antigravity/brain/c5ae8e55-e84e-4157-bf41-32a46f04fa9e/cms_builder_verify_1773122058977.webp)
+
+✅ All elements verified:
+- Page tabs render from database
+- Add New Section creates a new block
+- Rich text toolbar is functional
+- Change detection works (unsaved vs saved indicator)
+- Sticky action bar with Save & Publish / Discard
