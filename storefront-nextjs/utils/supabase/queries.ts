@@ -1,4 +1,4 @@
-import { createClient } from '@/utils/supabase/server'
+import { createStaticClient } from '@/utils/supabase/server'
 import { unstable_cache } from 'next/cache'
 
 /**
@@ -11,7 +11,7 @@ import { unstable_cache } from 'next/cache'
 
 export const getCachedProducts = unstable_cache(
   async () => {
-    const supabase = await createClient()
+    const supabase = await createStaticClient()
     const { data, error } = await supabase
       .from('products')
       .select('*, categories(name_en, name_ar)')
@@ -27,7 +27,7 @@ export const getCachedProducts = unstable_cache(
 
 export const getCachedCategories = unstable_cache(
   async () => {
-    const supabase = await createClient()
+    const supabase = await createStaticClient()
     const { data, error } = await supabase
       .from('categories')
       .select('*')
@@ -43,7 +43,7 @@ export const getCachedCategories = unstable_cache(
 
 export const getCachedPage = (slug: string) => unstable_cache(
   async () => {
-    const supabase = await createClient()
+    const supabase = await createStaticClient()
     const { data, error } = await supabase
       .from('dynamic_pages')
       .select('*')
@@ -59,7 +59,7 @@ export const getCachedPage = (slug: string) => unstable_cache(
 
 export const getCachedSettings = unstable_cache(
   async () => {
-    const supabase = await createClient()
+    const supabase = await createStaticClient()
     const { data, error } = await supabase.from('site_settings').select('*')
     if (error) return {}
     
