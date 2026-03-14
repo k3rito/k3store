@@ -172,11 +172,21 @@ async function requireRole(...allowedRoles: AppRole[]) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Not authenticated')
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (!profile || !allowedRoles.includes(profile.role as AppRole)) {
+
+  // Prioritize role from JWT metadata to avoid recursion and extra DB hits
+  let role = user.app_metadata?.role as AppRole
+
+  // Fallback to DB check ONLY if metadata is missing (e.g., first login after migration)
+  if (!role) {
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+    role = profile?.role as AppRole
+  }
+
+  if (!role || !allowedRoles.includes(role)) {
     throw new Error('Insufficient permissions')
   }
-  return { supabase, userId: user.id, role: profile.role as AppRole }
+
+  return { supabase, userId: user.id, role }
 }
 
 // ================= Staff / Users Management =================
