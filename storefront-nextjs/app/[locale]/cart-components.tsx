@@ -4,6 +4,7 @@ import { useCartStore, CartItem } from '@/store/cartStore'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import { useLoading } from '@/components/providers'
 
 function Toast({ message, onClose }: { message: string; onClose: () => void }) {
   useEffect(() => { const t = setTimeout(onClose, 2500); return () => clearTimeout(t) }, [onClose])
@@ -17,6 +18,30 @@ function Toast({ message, onClose }: { message: string; onClose: () => void }) {
 export function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const { locale } = useParams<{ locale: string }>()
   const { items, removeItem, updateQuantity, clearCart, itemCount, cartTotal, isB2B } = useCartStore()
+  const { setIsLoading } = useLoading()
+  const [showToast, setShowToast] = useState(false)
+  const [toastMsg, setToastMsg] = useState('')
+
+  const shareCart = () => {
+    try {
+      setIsLoading(true)
+      const cartData = JSON.stringify(items.map(i => ({ id: i.id, q: i.quantity, b: isB2B })))
+      const encoded = btoa(cartData)
+      const shareUrl = `${window.location.origin}/${locale}?cart=${encoded}`
+      
+      if (navigator.share) {
+        navigator.share({ title: 'My Shopping Cart', url: shareUrl })
+      } else {
+        navigator.clipboard.writeText(shareUrl)
+        setToastMsg('Cart link copied!')
+        setShowToast(true)
+      }
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const getPrice = (item: CartItem) => isB2B && item.wholesale_price ? item.wholesale_price : item.price
 
@@ -38,9 +63,16 @@ export function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClose: () =
               <p className="text-xs text-slate-500">{itemCount()} item{itemCount() !== 1 ? 's' : ''}</p>
             </div>
           </div>
-          <button onClick={onClose} className="size-10 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-            <span className="material-symbols-outlined">close</span>
-          </button>
+          <div className="flex items-center gap-1">
+            {items.length > 0 && (
+              <button onClick={shareCart} className="size-10 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-primary transition-colors" title="Share Cart">
+                <span className="material-symbols-outlined">share</span>
+              </button>
+            )}
+            <button onClick={onClose} className="size-10 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+              <span className="material-symbols-outlined">close</span>
+            </button>
+          </div>
         </div>
 
         {/* Items */}
@@ -111,6 +143,7 @@ export function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClose: () =
           </div>
         )}
       </div>
+      {showToast && <Toast message={toastMsg} onClose={() => setShowToast(false)} />}
     </>
   )
 }

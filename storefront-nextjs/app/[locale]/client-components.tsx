@@ -7,19 +7,24 @@ import { createClient } from '@/utils/supabase/client'
 import { useTranslations } from 'next-intl'
 import { CartBadge, CartDrawer } from './cart-components'
 import { useCartStore } from '@/store/cartStore'
+import ProfileBubble from '@/components/profile-bubble'
+import { useLoading } from '@/components/providers'
 
 // ============= Sidebar / Drawer Component =============
 export function SidebarDrawer({ user, userRole }: { user: any; userRole: string }) {
   const [open, setOpen] = useState(false)
   const { locale } = useParams<{ locale: string }>()
   const tNav = useTranslations('Navigation')
+  const { setIsLoading } = useLoading()
   const router = useRouter()
 
   const handleLogout = async () => {
+    setIsLoading(true)
     const supabase = createClient()
     await supabase.auth.signOut()
     router.push(`/${locale}/login`)
     router.refresh()
+    setIsLoading(false)
   }
 
   return (
@@ -113,19 +118,35 @@ export function HeaderActions({ user, userRole }: { user: any; userRole: string 
   const tNav = useTranslations('Navigation')
   const router = useRouter()
   const [cartOpen, setCartOpen] = useState(false)
+  const [profileOpen, setProfileOpen] = useState(false)
+  const [profileData, setProfileData] = useState<{ fullName: string, role: string } | null>(null)
+  const { setIsLoading } = useLoading()
+  const supabase = createClient()
 
-  // Set B2B mode based on user role (e.g. employees get wholesale pricing)
+  // Set B2B mode based on user role
   const setB2B = useCartStore(s => s.setB2B)
+
   useEffect(() => {
+    async function fetchProfile() {
+      if (user) {
+        const { data } = await supabase.from('profiles').select('full_name, role').eq('id', user.id).single()
+        if (data) {
+          setProfileData({ fullName: data.full_name || 'Medical Professional', role: data.role })
+        }
+      }
+    }
+    fetchProfile()
+
     const b2bRoles = ['super_admin', 'supervisor', 'employee']
     setB2B(b2bRoles.includes(userRole))
-  }, [userRole, setB2B])
+  }, [userRole, setB2B, user, supabase])
 
   const handleLogout = async () => {
-    const supabase = createClient()
+    setIsLoading(true)
     await supabase.auth.signOut()
     router.push(`/${locale}/login`)
     router.refresh()
+    setIsLoading(false)
   }
 
   return (
@@ -142,22 +163,28 @@ export function HeaderActions({ user, userRole }: { user: any; userRole: string 
 
       {/* User Controls */}
       {user ? (
-        <div className="hidden sm:flex items-center gap-2">
-          <Link href={['super_admin', 'supervisor', 'employee', 'editor'].includes(userRole) ? `/${locale}/admin` : `/${locale}`} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-primary flex items-center gap-1 relative group">
+        <div className="relative">
+          <button 
+            onClick={() => setProfileOpen(!profileOpen)}
+            className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center hover:bg-primary/20 transition-all border border-primary/20"
+          >
             <span className="material-symbols-outlined">account_circle</span>
-            <span className="text-xs font-bold hidden group-hover:block absolute top-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white p-1 rounded whitespace-nowrap z-50">
-              {['super_admin', 'supervisor', 'employee', 'editor'].includes(userRole) ? tNav('dashboard') : tNav('home')}
-            </span>
-          </Link>
-          <button onClick={handleLogout} className="p-2 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-500 rounded-lg relative group">
-            <span className="material-symbols-outlined">logout</span>
-            <span className="text-xs font-bold hidden group-hover:block absolute top-10 right-0 bg-slate-900 text-white p-1 rounded z-50">{tNav('logout')}</span>
           </button>
+          
+          <div className="absolute right-0 mt-2 z-[60]">
+            <ProfileBubble 
+              userName={profileData?.fullName || "Loading..."}
+              userEmail={user.email}
+              userRole={profileData?.role?.replace('_', ' ').toUpperCase() || "USER"}
+              isOpen={profileOpen}
+              onClose={() => setProfileOpen(false)}
+            />
+          </div>
         </div>
       ) : (
         <Link href={`/${locale}/login`} className="hidden sm:flex items-center gap-1 hover:bg-slate-100 dark:hover:bg-slate-800 p-2 rounded-lg transition-colors">
-          <span className="material-symbols-outlined">person</span>
-          <span className="text-sm font-bold">{tNav('login')}</span>
+          <span className="material-symbols-outlined text-gray-500">person</span>
+          <span className="text-sm font-bold text-gray-700 dark:text-gray-300">{tNav('login')}</span>
         </Link>
       )}
     </div>

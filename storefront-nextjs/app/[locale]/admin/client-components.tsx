@@ -69,7 +69,7 @@ function DeleteProductButton({ productId, imageUrl }: { productId: string; image
 type Tab = 'overview' | 'products' | 'categories' | 'settings' | 'users' | 'orders' | 'reviews' | 'site-settings'
 type AppRole = 'super_admin' | 'supervisor' | 'employee' | 'editor' | 'user'
 
-export function AdminLayout({ defaultTab, locale, profile, email, categories, products, profiles, settings, dynamicPages }: {
+export function AdminLayout({ defaultTab, locale, profile, email, categories, products, profiles, settings, dynamicPages, orders, reviews }: {
   defaultTab: Tab,
   locale: string,
   profile: any,
@@ -78,7 +78,9 @@ export function AdminLayout({ defaultTab, locale, profile, email, categories, pr
   products: any[],
   profiles: any[],
   settings: Record<string, string>,
-  dynamicPages: any[]
+  dynamicPages: any[],
+  orders: any[],
+  reviews: any[]
 }) {
   const t = useTranslations('Admin')
   const [activeTab, setActiveTab] = useState<Tab>(defaultTab)
@@ -297,13 +299,13 @@ export function AdminLayout({ defaultTab, locale, profile, email, categories, pr
           </div>
         </header>
 
-        {activeTab === 'overview' && <OverviewTab />}
+        {activeTab === 'overview' && <OverviewTab orders={orders} profiles={profiles} reviews={reviews} />}
         {activeTab === 'products' && <ProductsTab initialProducts={products} categories={categories} />}
         {activeTab === 'categories' && <CategoriesTab initialCategories={categories} />}
         {activeTab === 'settings' && <SettingsTab initialSettings={settings} />}
         {activeTab === 'users' && <UsersTab fallbackEmail={email} initialProfiles={profiles} currentUserId={profile.id} currentUserRole={userRole} />}
-        {activeTab === 'orders' && <OrdersTab />}
-        {activeTab === 'reviews' && <ReviewsTab />}
+        {activeTab === 'orders' && <OrdersTab initialOrders={orders} />}
+        {activeTab === 'reviews' && <ReviewsTab initialReviews={reviews} />}
         {activeTab === 'site-settings' && <SiteSettingsTab initialPages={dynamicPages} userRole={userRole} />}
       </main>
     </div>
@@ -311,6 +313,7 @@ export function AdminLayout({ defaultTab, locale, profile, email, categories, pr
 }
 
 function UsersTab({ fallbackEmail, initialProfiles, currentUserId, currentUserRole }: { fallbackEmail: string, initialProfiles: any[], currentUserId: string, currentUserRole: AppRole }) {
+  const router = useRouter()
   const [profiles, setProfiles] = useState(initialProfiles)
   const [loading, setLoading] = useState<string | null>(null)
   const [showAddModal, setShowAddModal] = useState(false)
@@ -365,7 +368,7 @@ function UsersTab({ fallbackEmail, initialProfiles, currentUserId, currentUserRo
     try {
       await addStaffMember(addEmail.trim(), addRole as any)
       setShowAddModal(false); setAddEmail(''); setAddRole('')
-      window.location.reload()
+      router.refresh()
     } catch (e: any) { alert(e?.message || 'Error adding staff') } finally { setAddLoading(false) }
   }
 
@@ -548,7 +551,12 @@ function UsersTab({ fallbackEmail, initialProfiles, currentUserId, currentUserRo
   )
 }
 
-function OverviewTab() {
+function OverviewTab({ orders, profiles, reviews }: { orders: any[], profiles: any[], reviews: any[] }) {
+  const totalSales = orders.filter(o => o.status !== 'cancelled').reduce((acc, o) => acc + Number(o.total), 0)
+  const newUsers = profiles.length
+  const pendingOrders = orders.filter(o => o.status === 'pending').length
+  const avgRating = reviews.length > 0 ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1) : '0.0'
+
   return (
     <>
       <header className="flex justify-between items-center mb-8">
@@ -563,40 +571,40 @@ function OverviewTab() {
             <div className="p-2 bg-primary/10 text-primary rounded-lg">
               <span className="material-symbols-outlined">payments</span>
             </div>
-            <span className="text-xs font-bold text-green-500">+12.5%</span>
+            <span className="text-xs font-bold text-green-500">Live</span>
           </div>
           <p className="text-slate-500 text-sm font-medium">Total Sales</p>
-          <p className="text-2xl font-bold mt-1">$45,280</p>
+          <p className="text-2xl font-bold mt-1">${totalSales.toLocaleString()}</p>
         </div>
         <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
           <div className="flex justify-between items-start mb-4">
             <div className="p-2 bg-blue-100 text-blue-600 rounded-lg">
               <span className="material-symbols-outlined">group</span>
             </div>
-            <span className="text-xs font-bold text-green-500">+5.2%</span>
+            <span className="text-xs font-bold text-green-500">Live</span>
           </div>
-          <p className="text-slate-500 text-sm font-medium">New Users</p>
-          <p className="text-2xl font-bold mt-1">1,240</p>
+          <p className="text-slate-500 text-sm font-medium">Total Users</p>
+          <p className="text-2xl font-bold mt-1">{newUsers.toLocaleString()}</p>
         </div>
         <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
           <div className="flex justify-between items-start mb-4">
             <div className="p-2 bg-amber-100 text-amber-600 rounded-lg">
               <span className="material-symbols-outlined">pending_actions</span>
             </div>
-            <span className="text-xs font-bold text-slate-400">Stable</span>
+            <span className="text-xs font-bold text-slate-400">Live</span>
           </div>
           <p className="text-slate-500 text-sm font-medium">Pending Orders</p>
-          <p className="text-2xl font-bold mt-1">48</p>
+          <p className="text-2xl font-bold mt-1">{pendingOrders}</p>
         </div>
         <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
           <div className="flex justify-between items-start mb-4">
             <div className="p-2 bg-purple-100 text-purple-600 rounded-lg">
               <span className="material-symbols-outlined">star</span>
             </div>
-            <span className="text-xs font-bold text-green-500">+2.4%</span>
+            <span className="text-xs font-bold text-green-500">Live</span>
           </div>
           <p className="text-slate-500 text-sm font-medium">Average Rating</p>
-          <p className="text-2xl font-bold mt-1">4.8</p>
+          <p className="text-2xl font-bold mt-1">{avgRating}</p>
         </div>
       </div>
     </>
@@ -1074,14 +1082,22 @@ function ProductsTab({ initialProducts, categories }: { initialProducts: any[], 
 }
 
 // ============= Task 8: Orders Tab =============
-function OrdersTab() {
-  const orders = [
-    { id: '#ORD-1042', customer: 'Ahmed Hassan', email: 'ahmed@example.com', total: 245.50, status: 'pending', date: '2026-03-10', items: 3 },
-    { id: '#ORD-1041', customer: 'Sarah Miller', email: 'sarah@example.com', total: 89.99, status: 'processing', date: '2026-03-09', items: 1 },
-    { id: '#ORD-1040', customer: 'Omar Khalil', email: 'omar@example.com', total: 512.00, status: 'completed', date: '2026-03-08', items: 5 },
-    { id: '#ORD-1039', customer: 'Layla Noor', email: 'layla@example.com', total: 149.00, status: 'completed', date: '2026-03-07', items: 2 },
-    { id: '#ORD-1038', customer: 'John Smith', email: 'john@example.com', total: 29.99, status: 'cancelled', date: '2026-03-06', items: 1 },
-  ]
+function OrdersTab({ initialOrders }: { initialOrders: any[] }) {
+  const [currentPage, setCurrentPage] = useState(1)
+  const pageSize = 10
+
+  const orders = initialOrders.map(o => ({
+    id: `#ORD-${o.id.slice(0, 4).toUpperCase()}`,
+    customer: o.profiles?.full_name || 'Anonymous',
+    email: o.profiles?.email || 'No Email',
+    total: Number(o.total),
+    status: o.status,
+    date: new Date(o.created_at).toLocaleDateString(),
+    items: 0
+  }))
+
+  const totalPages = Math.ceil(orders.length / pageSize)
+  const paginatedOrders = orders.slice((currentPage - 1) * pageSize, currentPage * pageSize)
 
   const statusColors: Record<string, string> = {
     pending: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
@@ -1120,7 +1136,7 @@ function OrdersTab() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-slate-800 text-sm">
-              {orders.map(order => (
+              {paginatedOrders.map(order => (
                 <tr key={order.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
                   <td className="px-6 py-4 font-bold text-primary">{order.id}</td>
                   <td className="px-6 py-4">
@@ -1142,20 +1158,36 @@ function OrdersTab() {
             </tbody>
           </table>
         </div>
+        {totalPages > 1 && (
+          <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 flex items-center justify-between">
+            <span className="text-xs text-slate-500">Page {currentPage} of {totalPages}</span>
+            <div className="flex gap-2">
+              <button disabled={currentPage === 1} onClick={() => setCurrentPage(prev => prev - 1)} className="px-3 py-1 text-xs font-bold border border-slate-200 rounded-lg hover:bg-white disabled:opacity-50">Prev</button>
+              <button disabled={currentPage === totalPages} onClick={() => setCurrentPage(prev => prev + 1)} className="px-3 py-1 text-xs font-bold border border-slate-200 rounded-lg hover:bg-white disabled:opacity-50">Next</button>
+            </div>
+          </div>
+        )}
       </section>
     </>
   )
 }
 
 // ============= Task 8: Reviews Tab =============
-function ReviewsTab() {
-  const reviews = [
-    { id: 1, customer: 'Dr. Ahmed', product: 'Professional Pulse Oximeter', rating: 5, comment: 'Excellent accuracy and build quality. Highly recommended for clinic use.', date: '2026-03-09' },
-    { id: 2, customer: 'Nurse Sarah', product: 'Infrared Forehead Thermometer', rating: 4, comment: 'Fast readings, very convenient for pediatric patients. Would prefer smaller form factor.', date: '2026-03-08' },
-    { id: 3, customer: 'Omar K.', product: 'Blood Pressure Monitor', rating: 5, comment: 'Large display makes it easy to read. Great memory function. My patients love it.', date: '2026-03-07' },
-    { id: 4, customer: 'Dr. Layla', product: 'Cardiology Stethoscope', rating: 5, comment: 'Superior acoustic sensitivity. Worth every penny. Best stethoscope I have owned.', date: '2026-03-05' },
-    { id: 5, customer: 'John S.', product: 'Infrared Forehead Thermometer', rating: 3, comment: 'Decent thermometer but battery life could be better.', date: '2026-03-03' },
-  ]
+function ReviewsTab({ initialReviews }: { initialReviews: any[] }) {
+  const [currentPage, setCurrentPage] = useState(1)
+  const pageSize = 5 // Fewer reviews per page for vertical list
+
+  const reviews = initialReviews.map(r => ({
+    id: r.id,
+    customer: r.profiles?.full_name || 'User',
+    product: r.products?.name_en || 'Product',
+    rating: r.rating,
+    comment: r.comment,
+    date: new Date(r.created_at).toLocaleDateString()
+  }))
+
+  const totalPages = Math.ceil(reviews.length / pageSize)
+  const paginatedReviews = reviews.slice((currentPage - 1) * pageSize, currentPage * pageSize)
 
   return (
     <>
@@ -1174,7 +1206,7 @@ function ReviewsTab() {
       </header>
 
       <div className="space-y-4">
-        {reviews.map(review => (
+        {paginatedReviews.map(review => (
           <div key={review.id} className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
               <div className="flex items-center gap-3">
@@ -1198,6 +1230,14 @@ function ReviewsTab() {
             <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">{review.comment}</p>
           </div>
         ))}
+
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-4 pt-4">
+            <button disabled={currentPage === 1} onClick={() => setCurrentPage(prev => prev - 1)} className="px-4 py-2 text-sm font-bold border border-slate-200 rounded-xl hover:bg-slate-50 disabled:opacity-50 transition-colors">Previous</button>
+            <span className="text-sm font-medium">Page {currentPage} of {totalPages}</span>
+            <button disabled={currentPage === totalPages} onClick={() => setCurrentPage(prev => prev + 1)} className="px-4 py-2 text-sm font-bold border border-slate-200 rounded-xl hover:bg-slate-50 disabled:opacity-50 transition-colors">Next</button>
+          </div>
+        )}
       </div>
     </>
   )

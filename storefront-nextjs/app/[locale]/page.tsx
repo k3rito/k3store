@@ -3,6 +3,8 @@ import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
 import { SidebarDrawer, HeaderActions, MobileBottomBar, ProductSearchBar } from './client-components'
 import { AddToCartButton } from './cart-components'
+import { CartImporter } from './cart-importer'
+import { Suspense } from 'react'
 
 export const revalidate = 0
 
@@ -20,16 +22,20 @@ export default async function Home(props: { params: Promise<{ locale: string }> 
     if (profile) userRole = profile.role
   }
 
-  // Fetch CMS Settings
-  const { data: settingsData } = await supabase.from('site_settings').select('*')
-  const settings = settingsData?.reduce((acc: Record<string, string>, curr) => {
-    acc[curr.key] = curr.value || ''
-    return acc
-  }, {}) || {}
+  const { 
+    getCachedSettings, 
+    getCachedCategories, 
+    getCachedProducts 
+  } = await import('@/utils/supabase/queries')
+  
+  const [settings, categories, allProducts] = await Promise.all([
+    getCachedSettings(),
+    getCachedCategories(),
+    getCachedProducts()
+  ])
 
-  // Fetch Categories & Products
-  const { data: categories } = await supabase.from('categories').select('*').eq('status', 'active').order('display_order')
-  const { data: products } = await supabase.from('products').select('*').eq('status', 'active').order('created_at', { ascending: false }).limit(4)
+  // Slice for featured products
+  const products = allProducts.slice(0, 4)
 
   // Fallback Values for CMS
   const headerTitle = settings['header_title'] || 'MedStore'
@@ -46,6 +52,7 @@ export default async function Home(props: { params: Promise<{ locale: string }> 
 
   return (
     <>
+      <Suspense fallback={null}><CartImporter /></Suspense>
       {/* Header & Navigation */}
       <header className="sticky top-0 z-50 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
         <div className="max-w-7xl mx-auto px-4">
@@ -150,23 +157,25 @@ export default async function Home(props: { params: Promise<{ locale: string }> 
             {products && products.length > 0 ? (
               products.map((prod: any, i: number) => (
                 <div key={prod.id || i} className="bg-white dark:bg-slate-900 rounded-xl p-4 border border-slate-100 shadow-sm hover:shadow-xl transition-all">
-                  <div className="relative mb-4">
+                  <Link href={`/${locale}/products/${prod.id}`} className="group/img block relative mb-4">
                     {i === 0 && <span className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded z-10">{tHome('hotSale')}</span>}
                     {prod.image_url ? (
-                      <img alt={localName(prod)} className="w-full h-48 object-contain relative z-0" src={prod.image_url} />
+                      <img alt={localName(prod)} className="w-full h-48 object-contain relative z-0 group-hover/img:scale-105 transition-transform" src={prod.image_url} />
                     ) : (
                       <div className="w-full h-48 bg-slate-50 dark:bg-slate-800 flex items-center justify-center rounded-lg">
                         <span className="material-symbols-outlined text-4xl text-slate-300">image</span>
                       </div>
                     )}
-                  </div>
+                  </Link>
                   <div className="flex items-center gap-1 mb-1">
                     {[1,2,3,4,5].map((star) => (
                       <span key={star} className={`material-symbols-outlined text-sm ${star <= (Math.round(prod.rating_avg) || 5) ? 'text-yellow-400 fill-current' : 'text-slate-300'}`}>star</span>
                     ))}
                     <span className="text-[10px] text-slate-400 ml-1">({prod.reviews_count || 0})</span>
                   </div>
-                  <h5 className="font-bold text-sm mb-1 truncate" title={localName(prod)}>{localName(prod)}</h5>
+                  <Link href={`/${locale}/products/${prod.id}`} className="block group/title">
+                    <h5 className="font-bold text-sm mb-1 truncate group-hover/title:text-primary transition-colors" title={localName(prod)}>{localName(prod)}</h5>
+                  </Link>
                   <p className="text-xs text-slate-500 mb-3 truncate" title={localDesc(prod)}>{localDesc(prod)}</p>
                   <div className="flex items-center justify-between">
                     <span className="text-primary font-extrabold">${Number(prod.price).toFixed(2)}</span>

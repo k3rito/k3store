@@ -4,6 +4,7 @@ import { createClient } from '@/utils/supabase/client'
 import { useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
+import { useLoading } from '@/components/providers'
 
 export default function LoginPage() {
   const { locale } = useParams<{ locale: string }>()
@@ -14,6 +15,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const { setIsLoading } = useLoading()
   const [loading, setLoading] = useState(false)
 
   async function handleLogin(e: React.FormEvent) {
@@ -21,12 +23,14 @@ export default function LoginPage() {
     setLoading(true)
     setError(null)
 
+    setIsLoading(true)
     const supabase = createClient()
     const { error: authError } = await supabase.auth.signInWithPassword({ email, password })
 
     if (authError) {
       setError(authError.message)
       setLoading(false)
+      setIsLoading(false)
       return
     }
 
@@ -45,6 +49,7 @@ export default function LoginPage() {
         router.push(`/${locale}`)
       }
       router.refresh()
+      setIsLoading(false)
     }
   }
 

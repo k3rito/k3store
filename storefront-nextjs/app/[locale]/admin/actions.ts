@@ -4,7 +4,7 @@ import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
 
 export async function updateSetting(key: string, value: string) {
-  const supabase = await createClient()
+  const { supabase } = await requireRole('super_admin', 'supervisor')
 
   const { error } = await supabase.from('site_settings').upsert({
     key,
@@ -21,7 +21,7 @@ export async function updateSetting(key: string, value: string) {
 }
 
 export async function updateCategoryOrder(items: { id: string; display_order: number }[]) {
-  const supabase = await createClient()
+  const { supabase } = await requireRole('super_admin', 'supervisor', 'editor')
 
   for (const item of items) {
     const { error } = await supabase.from('categories').update({ display_order: item.display_order }).eq('id', item.id)
@@ -36,7 +36,7 @@ export async function updateCategoryOrder(items: { id: string; display_order: nu
 
 export async function deleteProduct(id: string) {
   try {
-    const supabase = await createClient()
+    const { supabase } = await requireRole('super_admin', 'supervisor', 'editor')
     const { error } = await supabase.from('products').delete().eq('id', id)
     if (error) {
       if (error.code === '23503') {
@@ -53,7 +53,7 @@ export async function deleteProduct(id: string) {
 
 // ================= Categories CRUD =================
 export async function createCategory(nameEn: string, nameAr: string, imageUrl?: string) {
-  const supabase = await createClient()
+  const { supabase } = await requireRole('super_admin', 'supervisor', 'editor')
   const { error } = await supabase.from('categories').insert({
     name_en: nameEn,
     name_ar: nameAr,
@@ -68,7 +68,7 @@ export async function createCategory(nameEn: string, nameAr: string, imageUrl?: 
 }
 
 export async function updateCategory(id: string, nameEn: string, nameAr: string, imageUrl?: string) {
-  const supabase = await createClient()
+  const { supabase } = await requireRole('super_admin', 'supervisor', 'editor')
   const { error } = await supabase.from('categories').update({
     name_en: nameEn,
     name_ar: nameAr,
@@ -82,7 +82,7 @@ export async function updateCategory(id: string, nameEn: string, nameAr: string,
 }
 
 export async function deleteCategory(id: string) {
-  const supabase = await createClient()
+  const { supabase } = await requireRole('super_admin', 'supervisor')
   const { error } = await supabase.from('categories').delete().eq('id', id)
   if (error) {
     console.error('Failed to delete category:', error)
@@ -103,7 +103,7 @@ export async function createProduct(data: {
   image_url?: string;
   status: string;
 }) {
-  const supabase = await createClient()
+  const { supabase } = await requireRole('super_admin', 'supervisor', 'editor')
 
   // Map stock_quantity from form → stock column in DB
   const payload: any = {
@@ -112,7 +112,7 @@ export async function createProduct(data: {
     description_en: data.description_en,
     description_ar: data.description_ar,
     price: data.price,
-    stock: data.stock_quantity,  // ← FIX: DB column is "stock", not "stock_quantity"
+    stock: data.stock_quantity,
     image_url: data.image_url || null,
     status: data.status || 'active',
   }
@@ -143,12 +143,12 @@ export async function updateProduct(id: string, data: Partial<{
   image_url?: string;
   status: string;
 }>) {
-  const supabase = await createClient()
+  const { supabase } = await requireRole('super_admin', 'supervisor', 'editor')
 
   // Map stock_quantity → stock for DB
   const payload: any = { ...data }
   if ('stock_quantity' in payload) {
-    payload.stock = payload.stock_quantity  // ← FIX: map to correct column
+    payload.stock = payload.stock_quantity
     delete payload.stock_quantity
   }
   if (payload.category_id === '' || payload.category_id === undefined) {
@@ -306,8 +306,7 @@ export async function approvePage(pageId: string) {
 }
 
 export async function rejectPage(pageId: string) {
-  await requireRole('super_admin', 'supervisor')
-  const supabase = await createClient()
+  const { supabase } = await requireRole('super_admin', 'supervisor')
   const { error } = await supabase.from('dynamic_pages').update({
     status: 'draft',
     updated_at: new Date().toISOString(),
@@ -317,7 +316,7 @@ export async function rejectPage(pageId: string) {
 }
 
 export async function getPendingPages() {
-  const supabase = await createClient()
+  const { supabase } = await requireRole('super_admin', 'supervisor')
   const { data, error } = await supabase
     .from('dynamic_pages')
     .select('id, page_name, slug, status, updated_at, updated_by')
@@ -328,11 +327,9 @@ export async function getPendingPages() {
 }
 
 export async function createDynamicPage(pageName: string, slug: string, icon: string) {
-  const supabase = await createClient()
+  const { supabase, userId } = await requireRole('super_admin', 'supervisor', 'editor')
   const { data: maxData } = await supabase.from('dynamic_pages').select('display_order').order('display_order', { ascending: false }).limit(1)
   const nextOrder = (maxData && maxData.length > 0 ? maxData[0].display_order : 0) + 1
-
-  const { data: { user } } = await supabase.auth.getUser()
 
   const { data, error } = await supabase.from('dynamic_pages').insert({
     page_name: pageName,
@@ -342,23 +339,97 @@ export async function createDynamicPage(pageName: string, slug: string, icon: st
     content: { content: [], root: {} },
     content_ar: { content: [], root: {} },
     status: 'draft',
-    updated_by: user?.id || null,
+    updated_by: userId || null,
   }).select().single()
+
   if (error) {
     console.error('Failed to create dynamic page:', error)
     throw new Error(`Failed to create page: ${error.message}`)
   }
+
   revalidatePath('/', 'layout')
   return data
 }
 
 export async function deleteDynamicPage(id: string) {
-  await requireRole('super_admin', 'supervisor')
-  const supabase = await createClient()
+  const { supabase } = await requireRole('super_admin', 'supervisor')
   const { error } = await supabase.from('dynamic_pages').delete().eq('id', id)
   if (error) {
     console.error('Failed to delete dynamic page:', error)
     throw new Error(`Failed to delete page: ${error.message}`)
   }
+  revalidatePath('/', 'layout')
+}
+
+// ================= Audit Logging =================
+export async function logAuditAction(action: string, targetId?: string, details?: any) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return
+
+  await supabase.from('audit_logs').insert({
+    actor_id: user.id,
+    action,
+    target_id: targetId,
+    details
+  })
+}
+
+// ================= Advanced HR Actions =================
+export async function updateStaffProfile(staffId: string, data: { phone?: string, hire_date?: string, status?: string }) {
+  const { supabase } = await requireRole('super_admin', 'supervisor')
+
+  const { error } = await supabase.from('profiles').update(data).eq('id', staffId)
+  if (error) throw new Error(`Failed to update staff: ${error.message}`)
+
+  await logAuditAction('STAFF_PROFILE_UPDATE', staffId, data)
+  revalidatePath('/', 'layout')
+}
+
+export async function deactivateStaff(staffId: string, reason: string) {
+  const { supabase, userId: callerId } = await requireRole('super_admin', 'supervisor')
+  if (staffId === callerId) throw new Error('Cannot deactivate your own account')
+
+  const { error } = await supabase.from('profiles').update({ 
+    status: 'Deactivated',
+    deactivation_reason: reason,
+    role: 'user' // Strip admin roles
+  }).eq('id', staffId)
+  
+  if (error) throw new Error(`Failed to deactivate staff: ${error.message}`)
+
+  await logAuditAction('STAFF_DEACTIVATE', staffId, { reason })
+  revalidatePath('/', 'layout')
+}
+
+export async function getStaffAuditLogs(staffId: string) {
+  const { supabase } = await requireRole('super_admin', 'supervisor')
+  const { data, error } = await supabase
+    .from('audit_logs')
+    .select('*, profiles!actor_id(full_name)')
+    .eq('target_id', staffId)
+    .order('created_at', { ascending: false })
+  
+  if (error) throw new Error(`Failed to fetch audit logs: ${error.message}`)
+  return data
+}
+
+// ================= Newsletter Actions =================
+export async function sendNewsletter(data: { subject: string, body: string, sender: string, attachment_url?: string, scheduled_at?: string }) {
+  const { supabase } = await requireRole('super_admin', 'supervisor', 'editor')
+
+  const { error } = await supabase.from('newsletters').insert({
+    subject: data.subject,
+    body: data.body,
+    sender_email: data.sender,
+    attachment_url: data.attachment_url,
+    scheduled_at: data.scheduled_at,
+    status: data.scheduled_at ? 'scheduled' : 'sent',
+    sent_at: data.scheduled_at ? null : new Date().toISOString()
+  })
+
+  if (error) throw new Error(`Failed to queue newsletter: ${error.message}`)
+
+  await logAuditAction('NEWSLETTER_SENT', undefined, { subject: data.subject })
   revalidatePath('/', 'layout')
 }

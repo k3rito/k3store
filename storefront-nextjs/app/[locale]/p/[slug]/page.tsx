@@ -45,8 +45,8 @@ export default async function DynamicPage(props: { params: Promise<{ locale: str
     const isArabic = locale === 'ar'
     const rawContent = isArabic ? (page.content_ar || page.content) : page.content
 
-    const puckData = rawContent && typeof rawContent === 'object' && 'content' in rawContent && 'root' in rawContent
-        ? rawContent
+    const puckData = rawContent && typeof rawContent === 'object'
+        ? (('content' in rawContent && 'root' in rawContent) ? rawContent : ('content' in (rawContent as any) ? { content: (rawContent as any).content, root: (rawContent as any).root || {} } : { content: [], root: {} }))
         : { content: [], root: {} }
 
     // Fetch site settings for header

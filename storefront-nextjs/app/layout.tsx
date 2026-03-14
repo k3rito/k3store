@@ -12,6 +12,9 @@ export const metadata: Metadata = {
   description: "Premium medical e-commerce solution",
 };
 
+import { Providers } from "@/components/providers";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -26,7 +29,10 @@ export default function RootLayout({
       <body
         className={`${manrope.variable} bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display antialiased`}
       >
-        {children}
+        <Providers>
+          {children}
+        </Providers>
+        <SpeedInsights />
       </body>
     </html>
   );

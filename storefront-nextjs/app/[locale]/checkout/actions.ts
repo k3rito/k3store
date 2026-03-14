@@ -18,7 +18,7 @@ interface ShippingDetails {
   city: string
 }
 
-export async function placeOrder(cartItems: CartItemInput[], shipping: ShippingDetails, isB2B: boolean) {
+export async function placeOrder(cartItems: CartItemInput[], shipping: ShippingDetails, isB2B: boolean, paymentMethod: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -43,6 +43,7 @@ export async function placeOrder(cartItems: CartItemInput[], shipping: ShippingD
         address: shipping.address,
         city: shipping.city,
       },
+      payment_method: paymentMethod,
     })
     .select('id')
     .single()

@@ -11,26 +11,22 @@ export default async function CategoryProductsPage(props: { params: Promise<{ lo
   const tHome = await getTranslations('Home')
   const tNav = await getTranslations('Navigation')
 
-  const supabase = await createClient()
+  const { 
+    getCachedCategories, 
+    getCachedProducts 
+  } = await import('@/utils/supabase/queries')
   
-  // 1. Fetch the category to display its name
-  const { data: category } = await supabase
-    .from('categories')
-    .select('*')
-    .eq('id', id)
-    .single()
+  const [allCategories, allProducts] = await Promise.all([
+    getCachedCategories(),
+    getCachedProducts()
+  ])
 
+  const category = allCategories.find((c: any) => c.id === id)
   if (!category) {
     notFound()
   }
 
-  // 2. Fetch products WHERE category_id = id
-  const { data: products } = await supabase
-    .from('products')
-    .select('*')
-    .eq('category_id', id)
-    .eq('status', 'active')
-    .order('created_at', { ascending: false })
+  const products = allProducts.filter((p: any) => p.category_id === id)
 
   const localName = (item: any) => locale === 'ar' ? (item.name_ar || item.name_en) : item.name_en
   const localDesc = (item: any) => locale === 'ar' ? (item.description_ar || item.description_en) : item.description_en
@@ -82,22 +78,24 @@ export default async function CategoryProductsPage(props: { params: Promise<{ lo
           {products && products.length > 0 ? (
             products.map((prod: any, i: number) => (
               <div key={prod.id || i} className="bg-white dark:bg-slate-900 rounded-xl p-4 border border-slate-100 shadow-sm hover:shadow-xl transition-all">
-                <div className="relative mb-4">
+                <Link href={`/${locale}/products/${prod.id}`} className="group/img block relative mb-4">
                   {prod.image_url ? (
-                    <img alt={localName(prod)} className="w-full h-48 object-contain relative z-0" src={prod.image_url} />
+                    <img alt={localName(prod)} className="w-full h-48 object-contain relative z-0 group-hover/img:scale-105 transition-transform" src={prod.image_url} />
                   ) : (
                     <div className="w-full h-48 bg-slate-50 dark:bg-slate-800 flex items-center justify-center rounded-lg">
                       <span className="material-symbols-outlined text-4xl text-slate-300">image</span>
                     </div>
                   )}
-                </div>
+                </Link>
                 <div className="flex items-center gap-1 mb-1">
                   {[1,2,3,4,5].map((star) => (
                     <span key={star} className={`material-symbols-outlined text-sm ${star <= (Math.round(prod.rating_avg) || 5) ? 'text-yellow-400 fill-current' : 'text-slate-300'}`}>star</span>
                   ))}
                   <span className="text-[10px] text-slate-400 ml-1">({prod.reviews_count || 0})</span>
                 </div>
-                <h5 className="font-bold text-sm mb-1 truncate" title={localName(prod)}>{localName(prod)}</h5>
+                <Link href={`/${locale}/products/${prod.id}`} className="block group/title">
+                  <h5 className="font-bold text-sm mb-1 truncate group-hover/title:text-primary transition-colors" title={localName(prod)}>{localName(prod)}</h5>
+                </Link>
                 <p className="text-xs text-slate-500 mb-3 truncate" title={localDesc(prod)}>{localDesc(prod)}</p>
                 <div className="flex items-center justify-between">
                   <span className="text-primary font-extrabold">${Number(prod.price).toFixed(2)}</span>

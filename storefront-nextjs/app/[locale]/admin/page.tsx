@@ -23,12 +23,22 @@ export default async function AdminDashboard(props: { searchParams: Promise<{ ta
   }
 
   // Fetch all necessary data
-  const [{ data: categories }, { data: products }, { data: settingsData }, { data: profiles }, { data: dynamicPages }] = await Promise.all([
+  const [
+    { data: categories }, 
+    { data: products }, 
+    { data: settingsData }, 
+    { data: profiles }, 
+    { data: dynamicPages },
+    { data: orders },
+    { data: reviews }
+  ] = await Promise.all([
     supabase.from('categories').select('*').order('display_order'),
     supabase.from('products').select('*').order('created_at', { ascending: false }),
     supabase.from('site_settings').select('*'),
     supabase.from('profiles').select('*').order('created_at', { ascending: false }),
-    supabase.from('dynamic_pages').select('*').order('display_order')
+    supabase.from('dynamic_pages').select('*').order('display_order'),
+    supabase.from('orders').select('*, profiles(full_name, email)').order('created_at', { ascending: false }),
+    supabase.from('reviews').select('*, profiles(full_name), products(name_en)').order('created_at', { ascending: false })
   ])
 
   const settings = settingsData?.reduce((acc: Record<string, string>, curr) => {
@@ -47,6 +57,8 @@ export default async function AdminDashboard(props: { searchParams: Promise<{ ta
       profiles={profiles || []}
       settings={settings}
       dynamicPages={dynamicPages || []}
+      orders={orders || []}
+      reviews={reviews || []}
     />
   )
 }

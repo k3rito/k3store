@@ -5,13 +5,16 @@ import { useCartStore } from '@/store/cartStore'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { placeOrder } from './actions'
+import { useLoading } from '@/components/providers'
 
 export default function CheckoutPage() {
   const { locale } = useParams<{ locale: string }>()
   const router = useRouter()
   const { items, itemCount, cartTotal, isB2B, clearCart } = useCartStore()
+  const { setIsLoading } = useLoading()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [paymentMethod, setPaymentMethod] = useState('cod') // cod, bank, cheque
   const [mounted, setMounted] = useState(false)
 
   const [form, setForm] = useState({
@@ -30,12 +33,13 @@ export default function CheckoutPage() {
     if (!form.full_name || !form.phone || !form.address || !form.city) {
       setError('Please fill in all shipping details.'); return
     }
-    setLoading(true); setError('')
+    setLoading(true); setError(''); setIsLoading(true)
     try {
       const result = await placeOrder(
         items.map(i => ({ id: i.id, name_en: i.name_en, price: i.price, wholesale_price: i.wholesale_price, quantity: i.quantity })),
         form,
-        isB2B
+        isB2B,
+        paymentMethod
       )
       clearCart()
       router.push(`/${locale}/checkout/success?orderId=${result.orderId}`)
@@ -43,6 +47,7 @@ export default function CheckoutPage() {
       setError(err?.message || 'Failed to place order. Please try again.')
     } finally {
       setLoading(false)
+      setIsLoading(false)
     }
   }
 
@@ -122,6 +127,45 @@ export default function CheckoutPage() {
                     <input required value={form.city} onChange={e => setForm({ ...form, city: e.target.value })} className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary outline-none text-sm" placeholder="New York" />
                   </div>
                 </div>
+                
+                {/* Payment Methods */}
+                <div className="space-y-3 pt-4">
+                  <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Payment Method *</label>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {[
+                      { id: 'cod', name: 'Cash on Delivery', icon: 'payments' },
+                      { id: 'bank', name: 'Bank Transfer', icon: 'account_balance' },
+                      { id: 'cheque', name: 'Cheque', icon: 'history_edu' },
+                    ].map(method => (
+                      <button
+                        key={method.id}
+                        type="button"
+                        onClick={() => setPaymentMethod(method.id)}
+                        className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all gap-2 ${paymentMethod === method.id 
+                          ? 'border-primary bg-primary/5 text-primary' 
+                          : 'border-slate-100 dark:border-slate-800 hover:border-slate-200 text-slate-500'}`}
+                      >
+                        <span className="material-symbols-outlined">{method.icon}</span>
+                        <span className="text-[10px] font-bold uppercase">{method.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {paymentMethod === 'bank' && (
+                  <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl text-blue-800 dark:text-blue-300 text-xs">
+                    <p className="font-bold mb-1">Bank Details:</p>
+                    <p>Bank: MedBank International</p>
+                    <p>Account: 1234-5678-9012 (SWIFT: MEDBXX)</p>
+                  </div>
+                )}
+                
+                {paymentMethod === 'cheque' && (
+                  <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-xl text-amber-800 dark:text-amber-300 text-xs">
+                    <p className="font-bold">Cheque Payment:</p>
+                    <p>Please make cheques payable to "K3 Medical Supplies". Your order will process after cheque clearance.</p>
+                  </div>
+                )}
 
                 {error && (
                   <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3 flex items-center gap-2 text-red-600 text-sm">
