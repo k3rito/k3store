@@ -6,7 +6,6 @@ export async function updateSession(request: NextRequest, i18nResponse?: NextRes
     request,
   })
 
-  // To properly ensure the headers and cookies from i18nResponse act as a base, we use it directly:
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -16,7 +15,7 @@ export async function updateSession(request: NextRequest, i18nResponse?: NextRes
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
           
           supabaseResponse = i18nResponse ? i18nResponse : NextResponse.next({
             request,
@@ -35,53 +34,39 @@ export async function updateSession(request: NextRequest, i18nResponse?: NextRes
   } = await supabase.auth.getUser()
 
   const pathname = request.nextUrl.pathname;
-  
-  // Use regex to catch locales like /en/admin or /ar/login, as well as just /admin
   const isAuthRoute = /^\/([^\/]+\/)?login\/?/.test(pathname);
   const isAdminRoute = /^\/([^\/]+\/)?admin\/?/.test(pathname);
 
-  // If unauthenticated and trying to access admin, redirect to login
+  // Helper for locale-aware redirects
+  const getRedirectUrl = (path: string) => {
+    const url = request.nextUrl.clone()
+    const localeMatch = pathname.match(/^\/([a-z]{2})(\/|$)/);
+    const localePrefix = localeMatch ? `/${localeMatch[1]}` : '';
+    url.pathname = `${localePrefix}${path}`
+    return url
+  }
+
+  // 1. Unauthenticated & Admin -> Login
   if (!user && isAdminRoute) {
-    const url = request.nextUrl.clone()
-    // Maintain the locale prefix if it exists
-    const localeMatch = pathname.match(/^\/([a-z]{2})\//);
-    const localePrefix = localeMatch ? `/${localeMatch[1]}` : '';
-    url.pathname = `${localePrefix}/login`
-    return NextResponse.redirect(url)
+    return NextResponse.redirect(getRedirectUrl('/login'))
   }
 
-  // If authenticated and accessing admin, check role
-  if (user && isAdminRoute) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-      
+  // 2. Authenticated checks
+  if (user) {
+    // Prioritize JWT metadata for role (Authoritative source)
+    const userRole = user.app_metadata?.role
     const adminRoles = ['super_admin', 'supervisor', 'employee', 'editor']
-    if (!profile || !adminRoles.includes(profile.role)) {
-      const url = request.nextUrl.clone()
-      const localeMatch = pathname.match(/^\/([a-z]{2})\//);
-      const localePrefix = localeMatch ? `/${localeMatch[1]}` : '';
-      url.pathname = localePrefix || '/'
-      return NextResponse.redirect(url)
+    const isAdmin = adminRoles.includes(userRole)
+
+    // Admin Route -> Check Role
+    if (isAdminRoute && !isAdmin) {
+      return NextResponse.redirect(getRedirectUrl(''))
     }
-  }
 
-  // If authenticated and trying to access login, redirect to admin if admin, else home
-  if (user && isAuthRoute) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-      
-    const url = request.nextUrl.clone()
-    const localeMatch = pathname.match(/^\/([a-z]{2})\//);
-    const localePrefix = localeMatch ? `/${localeMatch[1]}` : '';
-    const adminRoles = ['super_admin', 'supervisor', 'employee', 'editor']
-    url.pathname = adminRoles.includes(profile?.role) ? `${localePrefix}/admin` : (localePrefix || '/')
-    return NextResponse.redirect(url)
+    // Auth Route (Login) -> Redirect to appropriate dashboard
+    if (isAuthRoute) {
+      return NextResponse.redirect(isAdmin ? getRedirectUrl('/admin') : getRedirectUrl(''))
+    }
   }
 
   return supabaseResponse

@@ -1,16 +1,24 @@
 import type { Metadata } from "next";
 import { Manrope } from "next/font/google";
 import "./globals.css";
+import { getCachedSettings } from '@/utils/supabase/queries';
 
 const manrope = Manrope({
   variable: "--font-display",
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "MedStore - Medical E-Commerce",
-  description: "Premium medical e-commerce solution",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getCachedSettings()
+  const headerTitle = settings['header_title'] || 'MedStore'
+  return {
+    title: {
+      template: `%s | ${headerTitle}`,
+      default: headerTitle,
+    },
+    description: "Premium medical e-commerce solution",
+  }
+}
 
 import { Providers } from "@/components/providers";
 import { SpeedInsights } from "@vercel/speed-insights/next";

@@ -1,15 +1,21 @@
 'use client'
 
+import React, { useState, useEffect } from 'react'
 import { useCartStore, CartItem } from '@/store/cartStore'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import Image from 'next/image'
 import { useLoading } from '@/components/providers'
 
+// ── Shared Toast Component ──
 function Toast({ message, onClose }: { message: string; onClose: () => void }) {
-  useEffect(() => { const t = setTimeout(onClose, 2500); return () => clearTimeout(t) }, [onClose])
+  useEffect(() => {
+    const t = setTimeout(onClose, 2000)
+    return () => clearTimeout(t)
+  }, [onClose])
+
   return (
-    <div className="fixed bottom-6 right-6 z-[200] animate-toast-in flex items-center gap-3 px-5 py-3 rounded-xl shadow-2xl text-sm font-bold text-white bg-green-600">
+    <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[110] animate-toast-in flex items-center gap-3 px-5 py-3 rounded-xl shadow-2xl text-sm font-bold text-white bg-green-600">
       <span className="material-symbols-outlined text-lg">check_circle</span>{message}
     </div>
   )
@@ -82,16 +88,16 @@ export function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClose: () =
               <span className="material-symbols-outlined text-6xl text-slate-200 mb-4">shopping_cart</span>
               <h3 className="font-bold text-lg text-slate-600">Cart is empty</h3>
               <p className="text-slate-400 text-sm mt-2">Add products to start building your order.</p>
-              <button onClick={onClose} className="mt-6 px-6 py-2.5 bg-primary text-white rounded-lg font-bold text-sm hover:bg-primary/90 transition-colors">Continue Shopping</button>
+              <button onClick={onClose} className="mt-6 px-6 py-2.5 bg-primary text-white rounded-lg font-bold text-sm hover:bg-primary-dark transition-colors">Continue Shopping</button>
             </div>
           ) : (
             <div className="divide-y divide-slate-100 dark:divide-slate-800">
               {items.map(item => (
                 <div key={item.id} className="flex items-center gap-4 px-6 py-4 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
                   {/* Image */}
-                  <div className="size-16 rounded-lg bg-slate-100 dark:bg-slate-800 overflow-hidden flex-shrink-0">
+                  <div className="size-16 rounded-lg bg-slate-100 dark:bg-slate-800 overflow-hidden flex-shrink-0 relative">
                     {item.image_url ? (
-                      <img src={item.image_url} alt={item.name_en} className="w-full h-full object-cover" />
+                      <Image src={item.image_url} alt={item.name_en} fill className="object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         <span className="material-symbols-outlined text-slate-300">inventory_2</span>
@@ -136,7 +142,7 @@ export function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClose: () =
               <span className="text-sm text-slate-500">Subtotal ({itemCount()} items)</span>
               <span className="text-xl font-extrabold text-primary">${cartTotal().toFixed(2)}</span>
             </div>
-            <Link href={`/${locale}/checkout`} onClick={onClose} className="flex items-center justify-center gap-2 w-full py-3 bg-primary text-white rounded-xl font-bold text-sm hover:bg-primary/90 shadow-lg shadow-primary/25 transition-all">
+            <Link href={`/${locale}/checkout`} onClick={onClose} className="flex items-center justify-center gap-2 w-full py-3 bg-primary text-white rounded-xl font-bold text-sm hover:bg-primary-dark shadow-lg shadow-primary/25 transition-all">
               <span className="material-symbols-outlined text-sm">shopping_cart_checkout</span> Proceed to Checkout
             </Link>
             <button onClick={clearCart} className="w-full text-center text-xs text-red-500 font-bold hover:underline">Clear Cart</button>
@@ -174,11 +180,11 @@ export function AddToCartButton({ product, variant = 'icon', className = '' }: {
   return (
     <>
       {variant === 'icon' ? (
-        <button onClick={handleClick} className={`size-10 flex items-center justify-center rounded-full bg-primary text-white hover:bg-primary/90 shadow-md shadow-primary/25 transition-all hover:scale-110 ${className}`} title="Add to Cart">
+        <button onClick={handleClick} className={`size-10 flex items-center justify-center rounded-full bg-primary text-white hover:bg-primary-dark shadow-md shadow-primary/25 transition-all hover:scale-110 ${className}`} title="Add to Cart">
           <span className="material-symbols-outlined text-lg">add_shopping_cart</span>
         </button>
       ) : (
-        <button onClick={handleClick} className={`flex items-center justify-center gap-2 w-full py-3 bg-primary text-white rounded-xl font-bold text-sm hover:bg-primary/90 shadow-lg shadow-primary/25 transition-all ${className}`}>
+        <button onClick={handleClick} className={`flex items-center justify-center gap-2 w-full py-3 bg-primary text-white rounded-xl font-bold text-sm hover:bg-primary-dark shadow-lg shadow-primary/25 transition-all ${className}`}>
           <span className="material-symbols-outlined text-sm">add_shopping_cart</span> Add to Cart
         </button>
       )}

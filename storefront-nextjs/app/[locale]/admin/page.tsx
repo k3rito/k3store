@@ -1,8 +1,10 @@
 import { createClient } from '@/utils/supabase/server'
 import { AdminLayout } from './client-components'
-import { redirect } from 'next/navigation' // Built-in Next.js redirect with locale prefixes from middleware
+import { redirect } from 'next/navigation'
+import { getAdminMetrics } from '@/utils/supabase/queries'
+import { Category, Product, Profile, Order } from '@/utils/types'
 
-export const revalidate = 0 // always fetch fresh data for admin
+export const revalidate = 0
 
 export default async function AdminDashboard(props: { searchParams: Promise<{ tab?: string }>; params: Promise<{ locale: string }> }) {
   const { tab } = await props.searchParams
@@ -16,13 +18,13 @@ export default async function AdminDashboard(props: { searchParams: Promise<{ ta
     redirect(`/${locale}/login`)
   }
 
-  const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single()
-
-  if (!['super_admin', 'supervisor', 'employee', 'editor'].includes(profile?.role)) {
+  const userRole = user.app_metadata?.role as any
+  if (!['super_admin', 'supervisor', 'employee', 'editor'].includes(userRole)) {
     redirect(`/${locale}`)
   }
 
-  // Fetch all necessary data
+  const metrics = await getAdminMetrics()
+
   const [
     { data: categories }, 
     { data: products }, 
@@ -30,15 +32,17 @@ export default async function AdminDashboard(props: { searchParams: Promise<{ ta
     { data: profiles }, 
     { data: dynamicPages },
     { data: orders },
-    { data: reviews }
+    { data: reviews },
+    { data: profile }
   ] = await Promise.all([
-    supabase.from('categories').select('*').order('display_order'),
-    supabase.from('products').select('*').order('created_at', { ascending: false }),
-    supabase.from('site_settings').select('*'),
-    supabase.from('profiles').select('*').order('created_at', { ascending: false }),
-    supabase.from('dynamic_pages').select('*').order('display_order'),
-    supabase.from('orders').select('*, profiles(full_name, email)').order('created_at', { ascending: false }),
-    supabase.from('reviews').select('*, profiles(full_name), products(name_en)').order('created_at', { ascending: false })
+    supabase.from('categories').select('id, name_en, name_ar, image_url, display_order').order('display_order'),
+    supabase.from('products').select('id, name_en, price, stock, status, image_url, created_at').order('created_at', { ascending: false }),
+    supabase.from('site_settings').select('key, value'),
+    supabase.from('profiles').select('id, full_name, email, role, status, created_at').order('created_at', { ascending: false }),
+    supabase.from('dynamic_pages').select('id, page_name, slug, icon, display_order, status, content, content_ar').order('display_order'),
+    supabase.from('orders').select('id, total_amount, status, customer_name, customer_email, created_at, profiles(full_name, email)').order('created_at', { ascending: false }).limit(50),
+    supabase.from('reviews').select('id, rating, comment, created_at, profiles(full_name), products(name_en)').order('created_at', { ascending: false }).limit(50),
+    supabase.from('profiles').select('*').eq('id', user.id).single()
   ])
 
   const settings = settingsData?.reduce((acc: Record<string, string>, curr) => {
@@ -46,19 +50,26 @@ export default async function AdminDashboard(props: { searchParams: Promise<{ ta
     return acc
   }, {}) || {}
 
+  // Fix Supabase nested profile mapping for types
+  const mappedOrders = (orders || []).map((o: any) => ({
+      ...o,
+      profiles: Array.isArray(o.profiles) ? o.profiles[0] : o.profiles
+  })) as Order[]
+
   return (
     <AdminLayout
       defaultTab={defaultTab as any}
       locale={locale}
-      profile={profile}
+      profile={profile as Profile}
       email={user.email || ''}
-      categories={categories || []}
-      products={products || []}
-      profiles={profiles || []}
+      categories={(categories || []) as Category[]}
+      products={(products || []) as Product[]}
+      profiles={(profiles || []) as Profile[]}
       settings={settings}
       dynamicPages={dynamicPages || []}
-      orders={orders || []}
+      orders={mappedOrders}
       reviews={reviews || []}
+      metrics={metrics}
     />
   )
 }

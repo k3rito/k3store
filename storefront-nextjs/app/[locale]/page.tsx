@@ -1,26 +1,77 @@
-import { createClient } from '@/utils/supabase/server'
 import Link from 'next/link'
+import Image from 'next/image'
 import { getTranslations } from 'next-intl/server'
-import { SidebarDrawer, HeaderActions, MobileBottomBar, ProductSearchBar } from './client-components'
-import { AddToCartButton } from './cart-components'
+import { MobileBottomBar, ProductSearchBar } from './client-components'
 import { CartImporter } from './cart-importer'
-import { Suspense } from 'react'
+import { Suspense, Fragment } from 'react'
+import { Header } from '@/components/header'
+import { Footer } from '@/components/footer'
+import { ProductCard } from '@/components/product-card'
+import { CategoryCard } from '@/components/category-card'
+import { GridSkeleton } from '@/components/skeletons'
+import { createClient } from '@/utils/supabase/server'
+import { Product, Category } from '@/utils/types'
+import { Metadata } from 'next'
+import { getCachedSettings } from '@/utils/supabase/queries'
 
 export const revalidate = 0
 
-export default async function Home(props: { params: Promise<{ locale: string }> }) {
-  const { locale } = await props.params;
-  const tNav = await getTranslations('Navigation');
-  const tHome = await getTranslations('Home');
-  const tFooter = await getTranslations('Footer');
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  let userRole = 'user'
-  if (user) {
-    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-    if (profile) userRole = profile.role
+export async function generateMetadata(props: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const settings = await getCachedSettings()
+  const headerTitle = settings['header_title'] || 'MedStore'
+  return {
+    title: `${headerTitle} - Professional Medical Equipment`,
+    description: settings['hero_subtitle'] || 'Premium medical e-commerce solution for healthcare professionals.',
   }
+}
+
+async function HeroSection({ settings, locale }: { settings: Record<string, string>, locale: string }) {
+  const tHome = await getTranslations('Home')
+  const heroImage = settings['hero_image'] || 'https://lh3.googleusercontent.com/aida-public/AB6AXuA588kmX3DwQmk8CXW0UBebTd55zzzhpA7mMy0ju3f0kv_c8ix9FzrrrgA9f3va_PFneZYJz2F-ZyfvdJgwFY6UXBSf06L8REpaxm9ppZev9Ut6_9_ZfA1I5rcJbLsgB6se5hQGpwIbaVNJSUr6_n0Q8BE5l7l5awJ_VBBzTEEBIENQtZbnrVAm0jbGIEPBwHvCPkTZHlhXl-RWE0blFZelR_qoOpXGD5As0asfd8vt8QL3-9VyrfoXPb93TKh0AC3NLo5Ccak8uPo'
+  const heroTitle = settings['hero_title'] || 'Professional Medical Solutions for Clinics'
+  const heroSubtitle = settings['hero_subtitle'] || tHome('heroSubtitle')
+
+  return (
+    <section className="max-w-7xl mx-auto px-4 py-8">
+      <div className="relative overflow-hidden rounded-[2rem] min-h-[500px] bg-slate-900 flex items-center shadow-2xl">
+        <Image
+          alt="Hero background"
+          src={heroImage}
+          fill
+          priority
+          className="object-cover opacity-50"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-900 via-slate-900/40 to-transparent flex flex-col justify-center px-8 md:px-20 w-full h-full">
+          <span className="text-primary font-bold tracking-[0.2em] text-xs uppercase mb-4 bg-primary/10 w-fit px-4 py-2 rounded-full border border-primary/20 backdrop-blur-md">
+            {tHome('exclusiveOffer')}
+          </span>
+          <h2 className="text-4xl md:text-6xl font-black text-white max-w-2xl leading-[1.1] mb-6 whitespace-pre-line">
+            {heroTitle.split('\n').map((line: string, i: number) => (
+              <Fragment key={i}>
+                {line}
+                {i < heroTitle.split('\n').length - 1 && <br />}
+              </Fragment>
+            ))}
+          </h2>
+          <p className="text-slate-300 text-lg mt-4 max-w-lg hidden md:block leading-relaxed mb-10">
+            {heroSubtitle}
+          </p>
+          <div className="flex flex-wrap gap-4">
+            <Link href={`/${locale}/products`} className="bg-primary hover:bg-primary/90 text-white font-bold py-5 px-10 rounded-2xl transition-all shadow-lg shadow-primary/30 active:scale-95 text-center">
+              {tHome('shopNow')}
+            </Link>
+            <Link href={`/${locale}/contact`} className="bg-white/10 hover:bg-white/20 backdrop-blur-md text-white font-bold py-5 px-10 rounded-2xl transition-all border border-white/20 active:scale-95 text-center">
+              {tHome('bulkQuotes')}
+            </Link>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+async function HomeContent({ locale }: { locale: string }) {
+  const tHome = await getTranslations('Home')
 
   const { 
     getCachedSettings, 
@@ -34,159 +85,53 @@ export default async function Home(props: { params: Promise<{ locale: string }> 
     getCachedProducts()
   ])
 
-  // Slice for featured products
-  const products = allProducts.slice(0, 4)
-
-  // Fallback Values for CMS
-  const headerTitle = settings['header_title'] || 'MedStore'
-  const heroImage = settings['hero_image'] || 'https://lh3.googleusercontent.com/aida-public/AB6AXuA588kmX3DwQmk8CXW0UBebTd55zzzhpA7mMy0ju3f0kv_c8ix9FzrrrgA9f3va_PFneZYJz2F-ZyfvdJgwFY6UXBSf06L8REpaxm9ppZev9Ut6_9_ZfA1I5rcJbLsgB6se5hQGpwIbaVNJSUr6_n0Q8BE5l7l5awJ_VBBzTEEBIENQtZbnrVAm0jbGIEPBwHvCPkTZHlhXl-RWE0blFZelR_qoOpXGD5As0asfd8vt8QL3-9VyrfoXPb93TKh0AC3NLo5Ccak8uPo'
-  const heroTitle = settings['hero_title'] || 'Professional Medical Solutions for Clinics'
-  const heroSubtitle = settings['hero_subtitle'] || tHome('heroSubtitle')
+  const featuredProducts = (allProducts as Product[]).slice(0, 4)
+  const topCategories = (categories as Category[]).slice(0, 6)
   const b2bImage = settings['b2b_image'] || 'https://lh3.googleusercontent.com/aida-public/AB6AXuDOZyXTw6FlU0gwaQi-JET6eowfu63YiKHr2MblZ6iuQa_5DzGnvYf4xuBivWm2mp2SnIfFSV87byX2CP60x5wIRiIKvltfd71kT7wqAYDbckYy9Xz0ffn5oF_KjbxMG7Ym4nBpLq5gaXaKYc0Msn6jjwZZK-ekYPbdQWlUiJgEx6Ylu7OXqTMd_gdQlugup0tBhCpCXTmWaJq1vlBXM2nGSNag7C66TrTfwuaM58_--o7SqguFb4Krl1Xd1eSuCX4m0l-74POf2XI'
   const b2bTitle = settings['b2b_title'] || 'Equip Your Entire Medical Facility'
   const b2bSubtitle = settings['b2b_subtitle'] || 'Get wholesale pricing, dedicated account managers, and priority fulfillment for hospitals, clinics, and government agencies.'
 
-  // Helper to pick localized name
-  const localName = (item: any) => locale === 'ar' ? (item.name_ar || item.name_en) : item.name_en
-  const localDesc = (item: any) => locale === 'ar' ? (item.description_ar || item.description_en) : item.description_en
-
   return (
     <>
-      <Suspense fallback={null}><CartImporter /></Suspense>
-      {/* Header & Navigation */}
-      <header className="sticky top-0 z-50 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo & Menu Trigger — CLIENT COMPONENT for interactivity */}
-            <div className="flex items-center gap-4">
-              <SidebarDrawer user={user ? { id: user.id, email: user.email } : null} userRole={userRole} />
-              <Link href={`/${locale}`} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-                <div className="bg-primary p-1.5 rounded-lg text-white">
-                  <span className="material-symbols-outlined text-xl sm:text-2xl">medical_services</span>
-                </div>
-                <h1 className="text-lg sm:text-xl font-bold tracking-tight text-primary">{headerTitle}</h1>
-              </Link>
-            </div>
-            {/* Desktop Nav */}
-            <nav className="hidden md:flex items-center gap-8">
-              <Link className="text-sm font-bold border-b-2 border-primary pb-1" href={`/${locale}`}>{tNav('home')}</Link>
-              <Link className="text-sm font-medium text-slate-500 hover:text-primary transition-colors" href={`/${locale}/about`}>{tNav('about')}</Link>
-              <Link className="text-sm font-medium text-slate-500 hover:text-primary transition-colors" href={`/${locale}/contact`}>{tNav('contact')}</Link>
-              <Link className="text-sm font-medium text-slate-500 hover:text-primary transition-colors" href={`/${locale}/b2b`}>{tNav('b2b')}</Link>
-            </nav>
-            {/* Actions — CLIENT COMPONENT for interactivity */}
-            <HeaderActions user={user ? { id: user.id, email: user.email } : null} userRole={userRole} />
-          </div>
-        </div>
-      </header>
-      
-      {/* Search Bar Section — Task 3: Product-only search */}
-      <div className="bg-white dark:bg-slate-900 px-4 py-4 shadow-sm">
-        <div className="max-w-3xl mx-auto">
-          <ProductSearchBar />
-        </div>
-      </div>
-      
-      {/* Hero Section */}
-      <section className="max-w-7xl mx-auto px-4 py-6">
-        <div className="relative overflow-hidden rounded-2xl aspect-[21/9] bg-slate-800 flex items-center">
-          <img alt="Hero background" className="absolute inset-0 w-full h-full object-cover opacity-60" src={heroImage} />
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-transparent flex flex-col justify-center px-8 md:px-16 w-full h-full">
-            <span className="text-white/80 font-bold tracking-widest text-xs uppercase mb-2">{tHome('exclusiveOffer')}</span>
-            <h2 className="text-3xl md:text-5xl font-extrabold text-white max-w-lg leading-tight" dangerouslySetInnerHTML={{ __html: heroTitle.replace(/\n/g, '<br />') }}>
-            </h2>
-            <p className="text-white/90 mt-4 max-w-md hidden md:block">
-              {heroSubtitle}
-            </p>
-            <div className="mt-8 flex gap-4">
-              <Link href={`/${locale}/categories`} className="bg-white text-primary px-6 py-3 rounded-lg font-bold hover:bg-slate-100 transition-all shadow-lg">{tHome('shopNow')}</Link>
-              <Link href={`/${locale}/b2b`} className="bg-primary/20 backdrop-blur-md text-white border border-white/30 px-6 py-3 rounded-lg font-bold hover:bg-primary/40 transition-all">{tHome('bulkQuotes')}</Link>
-            </div>
-          </div>
-        </div>
-      </section>
-      
-      {/* Category Section */}
-      <section className="max-w-7xl mx-auto px-4 py-12">
-        <div className="flex items-end justify-between mb-8">
+      <HeroSection settings={settings} locale={locale} />
+
+      {/* Category Grid */}
+      <section className="max-w-7xl mx-auto px-4 py-16">
+        <div className="flex items-end justify-between mb-10">
           <div>
-            <h3 className="text-2xl font-bold">{tHome('shopByCategory')}</h3>
-            <div className="h-1 w-12 bg-primary mt-2"></div>
+            <h3 className="text-3xl font-black mb-2">{tHome('shopByCategory')}</h3>
+            <div className="h-1.5 w-16 bg-primary rounded-full"></div>
           </div>
+          <Link href={`/${locale}/categories`} className="text-primary font-bold hover:underline flex items-center gap-1 group">
+            {tHome('viewAllCategories')}
+            <span className="material-symbols-outlined text-sm transition-transform group-hover:translate-x-1">arrow_forward</span>
+          </Link>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {categories && categories.length > 0 ? (
-            categories.map((cat: any, i: number) => (
-              <Link href={`/${locale}/categories/${cat.id}`} key={cat.id || i} className="group cursor-pointer block">
-                <div className="aspect-square rounded-xl overflow-hidden bg-white shadow-sm border border-slate-100 mb-3 group-hover:shadow-md transition-shadow">
-                  {cat.image_url ? (
-                    <img alt={localName(cat)} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src={cat.image_url} />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-slate-50">
-                      <span className="material-symbols-outlined text-4xl text-slate-300">image</span>
-                    </div>
-                  )}
-                </div>
-                <h4 className="font-bold text-center text-sm md:text-base">{localName(cat)}</h4>
-              </Link>
-            ))
-          ) : (
-            <div className="col-span-full py-12 text-center text-slate-500 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl border-dashed">
-              <span className="material-symbols-outlined text-4xl mb-2 text-slate-300">inventory_2</span>
-              <p>No categories found.</p>
-            </div>
-          )}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+          {topCategories.map((cat) => (
+            <CategoryCard key={cat.id} category={cat} locale={locale} />
+          ))}
         </div>
       </section>
-      
-      {/* Best Sellers */}
-      <section className="bg-primary/5 py-16">
+
+      {/* Featured Products */}
+      <section className="bg-slate-50 dark:bg-slate-900/50 py-20">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-between mb-8">
-            <h3 className="text-2xl font-bold">{tHome('bestSellers')}</h3>
-            <div className="flex gap-2">
-              <button className="p-2 rounded-full bg-white border border-slate-200 text-slate-400 hover:text-primary transition-colors">
-                <span className="material-symbols-outlined">chevron_left</span>
-              </button>
-              <button className="p-2 rounded-full bg-white border border-slate-200 text-slate-400 hover:text-primary transition-colors">
-                <span className="material-symbols-outlined">chevron_right</span>
-              </button>
+          <div className="flex items-center justify-between mb-12">
+            <div>
+              <h3 className="text-3xl font-black mb-2">{tHome('bestSellers')}</h3>
+              <div className="h-1.5 w-16 bg-primary rounded-full"></div>
             </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {products && products.length > 0 ? (
-              products.map((prod: any, i: number) => (
-                <div key={prod.id || i} className="bg-white dark:bg-slate-900 rounded-xl p-4 border border-slate-100 shadow-sm hover:shadow-xl transition-all">
-                  <Link href={`/${locale}/products/${prod.id}`} className="group/img block relative mb-4">
-                    {i === 0 && <span className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded z-10">{tHome('hotSale')}</span>}
-                    {prod.image_url ? (
-                      <img alt={localName(prod)} className="w-full h-48 object-contain relative z-0 group-hover/img:scale-105 transition-transform" src={prod.image_url} />
-                    ) : (
-                      <div className="w-full h-48 bg-slate-50 dark:bg-slate-800 flex items-center justify-center rounded-lg">
-                        <span className="material-symbols-outlined text-4xl text-slate-300">image</span>
-                      </div>
-                    )}
-                  </Link>
-                  <div className="flex items-center gap-1 mb-1">
-                    {[1,2,3,4,5].map((star) => (
-                      <span key={star} className={`material-symbols-outlined text-sm ${star <= (Math.round(prod.rating_avg) || 5) ? 'text-yellow-400 fill-current' : 'text-slate-300'}`}>star</span>
-                    ))}
-                    <span className="text-[10px] text-slate-400 ml-1">({prod.reviews_count || 0})</span>
-                  </div>
-                  <Link href={`/${locale}/products/${prod.id}`} className="block group/title">
-                    <h5 className="font-bold text-sm mb-1 truncate group-hover/title:text-primary transition-colors" title={localName(prod)}>{localName(prod)}</h5>
-                  </Link>
-                  <p className="text-xs text-slate-500 mb-3 truncate" title={localDesc(prod)}>{localDesc(prod)}</p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-primary font-extrabold">${Number(prod.price).toFixed(2)}</span>
-                    <AddToCartButton product={prod} />
-                  </div>
-                </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            {featuredProducts.length > 0 ? (
+              featuredProducts.map((prod, i) => (
+                <ProductCard key={prod.id} product={prod} locale={locale} isHot={i === 0} />
               ))
             ) : (
-              <div className="col-span-full py-16 text-center text-slate-500 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl border-dashed">
-                <span className="material-symbols-outlined text-4xl mb-2 text-slate-300">production_quantity_limits</span>
-                <p>No products available yet.</p>
+              <div className="col-span-full py-20 text-center text-slate-500 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-[2rem] border-dashed">
+                <span className="material-symbols-outlined text-5xl mb-4 text-slate-300">production_quantity_limits</span>
+                <p className="font-medium text-lg">No products available yet.</p>
               </div>
             )}
           </div>
@@ -194,111 +139,119 @@ export default async function Home(props: { params: Promise<{ locale: string }> 
       </section>
       
       {/* B2B Section */}
-      <section className="max-w-7xl mx-auto px-4 py-16">
-        <div className="bg-slate-900 rounded-3xl overflow-hidden flex flex-col md:flex-row">
-          <div className="flex-1 p-8 md:p-12 flex flex-col justify-center">
-            <div className="inline-flex items-center gap-2 bg-primary/20 text-primary px-3 py-1 rounded-full w-fit mb-6">
+      <section className="max-w-7xl mx-auto px-4 py-24">
+        <div className="bg-slate-950 rounded-[3rem] overflow-hidden flex flex-col lg:flex-row shadow-2xl">
+          <div className="flex-1 p-10 md:p-16 lg:p-20 flex flex-col justify-center">
+            <div className="inline-flex items-center gap-2 bg-primary/20 text-primary px-4 py-2 rounded-full w-fit mb-8 border border-primary/20">
               <span className="material-symbols-outlined text-sm">business</span>
-              <span className="text-xs font-bold uppercase tracking-wider">{tHome('b2bPortal')}</span>
+              <span className="text-[10px] font-black uppercase tracking-widest">{tHome('b2bPortal')}</span>
             </div>
-            <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-6" dangerouslySetInnerHTML={{ __html: b2bTitle.replace(/\n/g, '<br />') }}></h2>
-            <p className="text-slate-400 mb-8 leading-relaxed">
+            <h2 className="text-4xl md:text-5xl font-black text-white mb-8 leading-tight whitespace-pre-line">
+              {b2bTitle.split('\n').map((line: string, i: number) => (
+                <Fragment key={i}>
+                  {line}
+                  {i < b2bTitle.split('\n').length - 1 && <br />}
+                </Fragment>
+              ))}
+            </h2>
+            <p className="text-slate-400 text-lg mb-10 leading-relaxed">
               {b2bSubtitle}
             </p>
-            <div className="grid grid-cols-2 gap-6 mb-8">
-              <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-primary">verified_user</span>
-                <span className="text-sm text-slate-300">{tHome('certifiedEquipment')}</span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-12">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
+                  <span className="material-symbols-outlined">verified_user</span>
+                </div>
+                <span className="text-sm font-bold text-slate-300">{tHome('certifiedEquipment')}</span>
               </div>
-              <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-primary">local_shipping</span>
-                <span className="text-sm text-slate-300">{tHome('globalLogistics')}</span>
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
+                  <span className="material-symbols-outlined">local_shipping</span>
+                </div>
+                <span className="text-sm font-bold text-slate-300">{tHome('globalLogistics')}</span>
               </div>
-              <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-primary">contract</span>
-                <span className="text-sm text-slate-300">{tHome('bulkDiscounts')}</span>
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
+                  <span className="material-symbols-outlined">contract</span>
+                </div>
+                <span className="text-sm font-bold text-slate-300">{tHome('bulkDiscounts')}</span>
               </div>
-              <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-primary">support_agent</span>
-                <span className="text-sm text-slate-300">{tHome('techSupport')}</span>
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
+                  <span className="material-symbols-outlined">support_agent</span>
+                </div>
+                <span className="text-sm font-bold text-slate-300">{tHome('techSupport')}</span>
               </div>
             </div>
-            <Link href={`/${locale}/b2b`} className="bg-primary hover:bg-primary/90 text-white font-bold py-4 px-8 rounded-xl transition-all w-fit">{tHome('joinB2B')}</Link>
+            <Link href={`/${locale}/b2b`} className="bg-primary hover:bg-primary/90 text-white font-bold py-5 px-12 rounded-2xl transition-all shadow-lg shadow-primary/30 w-fit active:scale-95">{tHome('joinB2B')}</Link>
           </div>
-          <div className="flex-1 bg-slate-800 relative min-h-[300px]">
-            <img alt="Hospital corridor" className="absolute inset-0 w-full h-full object-cover opacity-70" src={b2bImage} />
+          <div className="flex-1 bg-slate-900 relative min-h-[400px]">
+            <Image
+              alt="Hospital facility"
+              src={b2bImage}
+              fill
+              className="object-cover opacity-60"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t lg:bg-gradient-to-l from-slate-950 to-transparent" />
           </div>
         </div>
       </section>
-      
-      {/* Newsletter */}
-      <section className="max-w-7xl mx-auto px-4 pb-16">
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 md:p-12 text-center shadow-sm">
-          <h3 className="text-2xl font-bold mb-2">{tHome('newsletter')}</h3>
-          <p className="text-slate-500 mb-8">{tHome('newsletterSubtitle')}</p>
-          <form className="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto">
-            <input className="flex-1 px-6 py-3 bg-slate-100 dark:bg-slate-800 border-none rounded-xl focus:ring-2 focus:ring-primary" placeholder={tHome('emailPlaceholder')} type="email" />
-            <button className="bg-slate-900 dark:bg-primary text-white font-bold px-8 py-3 rounded-xl hover:opacity-90 transition-opacity">{tHome('subscribe')}</button>
-          </form>
-        </div>
-      </section>
-      
-      {/* Footer */}
-      <footer className="bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-slate-900 pt-16 pb-8">
-        <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
-          <div className="col-span-1 md:col-span-1">
-            <Link href={`/${locale}`} className="flex items-center gap-2 mb-6 hover:opacity-80 transition-opacity">
-              <div className="bg-primary p-1.5 rounded-lg text-white">
-                <span className="material-symbols-outlined text-2xl">medical_services</span>
-              </div>
-              <h1 className="text-xl font-bold tracking-tight text-primary">{headerTitle}</h1>
-            </Link>
-            <p className="text-slate-500 text-sm leading-relaxed">
-              {tFooter('description')}
-            </p>
-          </div>
-          <div>
-            <h4 className="font-bold mb-6">{tFooter('categoriesTitle')}</h4>
-            <ul className="space-y-4 text-sm text-slate-500">
-              <li><a className="hover:text-primary transition-colors" href="#">{tFooter('diagnosticEquipment')}</a></li>
-              <li><a className="hover:text-primary transition-colors" href="#">{tFooter('surgicalInstruments')}</a></li>
-              <li><a className="hover:text-primary transition-colors" href="#">{tFooter('dentalCare')}</a></li>
-              <li><a className="hover:text-primary transition-colors" href="#">{tFooter('rehabilitation')}</a></li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-bold mb-6">{tFooter('companyTitle')}</h4>
-            <ul className="space-y-4 text-sm text-slate-500">
-              <li><Link className="hover:text-primary transition-colors" href={`/${locale}/about`}>{tFooter('aboutUs')}</Link></li>
-              <li><Link className="hover:text-primary transition-colors" href={`/${locale}/b2b`}>{tFooter('b2bSolutions')}</Link></li>
-              <li><a className="hover:text-primary transition-colors" href="#">{tFooter('logistics')}</a></li>
-              <li><Link className="hover:text-primary transition-colors" href={`/${locale}/contact`}>{tFooter('contactUs')}</Link></li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-bold mb-6">{tFooter('helpCenterTitle')}</h4>
-            <ul className="space-y-4 text-sm text-slate-500">
-              <li><a className="hover:text-primary transition-colors" href="#">{tFooter('trackOrder')}</a></li>
-              <li><a className="hover:text-primary transition-colors" href="#">{tFooter('returnsRefunds')}</a></li>
-              <li><a className="hover:text-primary transition-colors" href="#">{tFooter('certifications')}</a></li>
-              <li><a className="hover:text-primary transition-colors" href="#">{tFooter('termsOfService')}</a></li>
-            </ul>
-          </div>
-        </div>
-        <div className="max-w-7xl mx-auto px-4 border-t border-slate-100 dark:border-slate-900 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-slate-400 text-xs">{tFooter('copyright')}</p>
-          <div className="flex items-center gap-4">
-            <div className="flex gap-4">
-              <span className="material-symbols-outlined text-slate-300 cursor-pointer hover:text-primary">social_leaderboard</span>
-              <span className="material-symbols-outlined text-slate-300 cursor-pointer hover:text-primary">linked_camera</span>
-              <span className="material-symbols-outlined text-slate-300 cursor-pointer hover:text-primary">share</span>
-            </div>
-          </div>
-        </div>
-      </footer>
-      
-      {/* Bottom Nav Bar (Mobile) — CLIENT COMPONENT */}
-      <MobileBottomBar user={user ? { id: user.id, email: user.email } : null} />
     </>
+  )
+}
+
+export default async function Home(props: { params: Promise<{ locale: string }> }) {
+  const { locale } = await props.params;
+  const tHome = await getTranslations('Home');
+
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  return (
+    <div className="flex flex-col min-h-screen">
+      <Suspense fallback={null}><CartImporter /></Suspense>
+      
+      <Header locale={locale} />
+      
+      {/* Search Bar Section */}
+      <div className="bg-white dark:bg-slate-900 px-4 py-6 border-b border-slate-100 dark:border-slate-800">
+        <div className="max-w-3xl mx-auto">
+          <ProductSearchBar />
+        </div>
+      </div>
+
+      <main className="flex-grow">
+        <Suspense fallback={
+          <div className="max-w-7xl mx-auto px-4 py-8">
+            <div className="h-[500px] bg-slate-200 dark:bg-slate-800 rounded-[2rem] animate-pulse mb-16" />
+            <GridSkeleton count={6} type="category" />
+            <div className="mt-20">
+              <GridSkeleton count={4} type="product" />
+            </div>
+          </div>
+        }>
+          <HomeContent locale={locale} />
+        </Suspense>
+
+        {/* Newsletter */}
+        <section className="max-w-7xl mx-auto px-4 pb-24">
+          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-[3rem] p-12 md:p-20 text-center shadow-sm relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-24 h-24 bg-primary/5 rounded-br-full" />
+            <div className="absolute bottom-0 right-0 w-32 h-32 bg-primary/5 rounded-tl-full" />
+
+            <h3 className="text-3xl font-black mb-4">{tHome('newsletter')}</h3>
+            <p className="text-slate-500 text-lg mb-12 max-w-2xl mx-auto leading-relaxed">{tHome('newsletterSubtitle')}</p>
+            <form className="flex flex-col sm:flex-row gap-4 max-w-xl mx-auto">
+              <input className="flex-1 px-8 py-4 bg-slate-50 dark:bg-slate-800 border-2 border-transparent focus:border-primary/30 rounded-2xl focus:ring-0 outline-none transition-all text-sm" placeholder={tHome('emailPlaceholder')} type="email" required />
+              <button className="bg-slate-950 dark:bg-primary text-white font-bold px-10 py-4 rounded-2xl hover:opacity-90 transition-all active:scale-95 shadow-lg shadow-slate-950/10 dark:shadow-primary/20">{tHome('subscribe')}</button>
+            </form>
+          </div>
+        </section>
+      </main>
+
+      <Footer locale={locale} />
+      
+      <MobileBottomBar user={user ? { id: user.id, email: user.email } : null} />
+    </div>
   );
 }
