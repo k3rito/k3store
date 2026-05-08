@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
@@ -7,7 +6,7 @@ import { createClient } from '@/utils/supabase/server'
 import { Metadata } from 'next'
 import { getCachedSettings } from '@/utils/supabase/queries'
 
-export async function generateMetadata(props: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+export async function generateMetadata(): Promise<Metadata> {
   const settings = await getCachedSettings()
   const headerTitle = settings['header_title'] || 'MedStore'
   return {
@@ -34,20 +33,19 @@ export default async function ContactPage(props: { params: Promise<{ locale: str
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-          {/* Contact Form */}
           <div className="bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-200 dark:border-slate-800 p-8 md:p-10 shadow-sm">
             <form className="space-y-6">
               <div>
                 <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 ml-1">{tContact('name')}</label>
-                <input type="text" className="w-full px-5 py-4 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all text-sm font-medium" />
+                <input type="text" className="w-full px-5 py-4 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all text-sm font-medium text-slate-900 dark:text-white" />
               </div>
               <div>
                 <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 ml-1">{tContact('email')}</label>
-                <input type="email" className="w-full px-5 py-4 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all text-sm font-medium" />
+                <input type="email" className="w-full px-5 py-4 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all text-sm font-medium text-slate-900 dark:text-white" />
               </div>
               <div>
                 <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 ml-1">{tContact('message')}</label>
-                <textarea rows={5} className="w-full px-5 py-4 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all text-sm font-medium"></textarea>
+                <textarea rows={5} className="w-full px-5 py-4 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all text-sm font-medium text-slate-900 dark:text-white"></textarea>
               </div>
               <button type="submit" className="w-full bg-primary text-white font-black py-4 px-6 rounded-2xl hover:bg-primary-dark transition-all shadow-lg shadow-primary/20 active:scale-95">
                 {tContact('send')}
@@ -55,7 +53,6 @@ export default async function ContactPage(props: { params: Promise<{ locale: str
             </form>
           </div>
 
-          {/* Contact Info */}
           <div className="space-y-6 flex flex-col justify-center">
             <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
               <div className="flex items-center gap-5">

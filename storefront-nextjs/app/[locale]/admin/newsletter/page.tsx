@@ -3,7 +3,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { sendNewsletter } from '../actions';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 
@@ -73,7 +72,6 @@ const NewsletterPage = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 font-display antialiased">
-      {/* Simple Navigation */}
       <nav className="bg-white border-b border-slate-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href={`/${locale}/admin`} className="flex items-center gap-2 text-primary font-bold">
@@ -88,7 +86,6 @@ const NewsletterPage = () => {
         </div>
       </nav>
 
-      {/* Main Content */}
       <main className="max-w-7xl mx-auto px-6 py-10">
         <header className="mb-10">
           <h1 className="text-3xl font-extrabold text-slate-900">Newsletter Campaign</h1>
@@ -96,7 +93,6 @@ const NewsletterPage = () => {
         </header>
 
         <section className="bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-200 overflow-hidden">
-          {/* Sender Row */}
           <div className="px-8 py-6 border-b border-slate-100 bg-slate-50/50">
             <div className="flex flex-col md:flex-row md:items-center gap-4">
               <label className="w-full md:w-32 text-sm font-bold text-slate-700 uppercase tracking-wider" htmlFor="sender-email">From:</label>
@@ -115,7 +111,6 @@ const NewsletterPage = () => {
             </div>
           </div>
 
-          {/* Composer Body */}
           <div className="p-8 space-y-8">
             <div className="space-y-2">
               <label className="text-sm font-bold text-slate-700 uppercase tracking-wider block" htmlFor="subject-input">Email Subject</label>
@@ -188,7 +183,6 @@ const NewsletterPage = () => {
             </div>
           </div>
 
-          {/* Footer */}
           <div className="px-8 py-8 bg-slate-50 border-t border-slate-200 flex flex-col md:flex-row items-center justify-between gap-8">
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full md:w-auto">
               <div className="flex items-center gap-2">
@@ -214,7 +208,6 @@ const NewsletterPage = () => {
           </div>
         </section>
 
-        {/* Info Grid */}
         <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="p-6 bg-primary-light border border-primary/10 rounded-2xl flex gap-4">
             <div className="p-3 bg-white rounded-xl shadow-sm h-fit">

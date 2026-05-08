@@ -10,9 +10,6 @@ type FeatureItem = {
 
 export const puckRenderConfig = {
     components: {
-        // ═══════════════════════════════════════════
-        // ██  HERO SECTION
-        // ═══════════════════════════════════════════
         Hero: {
             label: 'Hero Section',
             fields: {
@@ -50,10 +47,6 @@ export const puckRenderConfig = {
                 </section>
             ),
         },
-
-        // ═══════════════════════════════════════════
-        // ██  FEATURE GRID
-        // ═══════════════════════════════════════════
         FeatureGrid: {
             label: 'Feature Grid',
             fields: {
@@ -108,10 +101,6 @@ export const puckRenderConfig = {
                 </section>
             ),
         },
-
-        // ═══════════════════════════════════════════
-        // ██  RICH TEXT
-        // ═══════════════════════════════════════════
         RichText: {
             label: 'Rich Text',
             fields: {
@@ -132,10 +121,6 @@ export const puckRenderConfig = {
                 )
             },
         },
-
-        // ═══════════════════════════════════════════
-        // ██  IMAGE BLOCK
-        // ═══════════════════════════════════════════
         ImageBlock: {
             label: 'Image',
             fields: {
@@ -171,10 +156,6 @@ export const puckRenderConfig = {
                 </figure>
             ),
         },
-
-        // ═══════════════════════════════════════════
-        // ██  BUTTON / LINK
-        // ═══════════════════════════════════════════
         ButtonLink: {
             label: 'Button / CTA',
             fields: {
@@ -213,10 +194,6 @@ export const puckRenderConfig = {
                 )
             },
         },
-
-        // ═══════════════════════════════════════════
-        // ██  SPACER
-        // ═══════════════════════════════════════════
         Spacer: {
             label: 'Spacer',
             fields: {

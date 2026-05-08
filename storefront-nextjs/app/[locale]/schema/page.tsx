@@ -7,8 +7,8 @@ export default function TechnicalSpecification() {
           
           <h2 style={{ color: '#0055A4', marginTop: '24px' }}>1. Tech Stack</h2>
           <ul>
-            <li><strong>Frontend:</strong> Next.js (App Router), Tailwind CSS, Framer Motion</li>
-            <li><strong>Backend/Database:</strong> Supabase (PostgreSQL, Auth, Storage, Edge Functions)</li>
+            <li><strong>Frontend:</strong> Next.js (App Router), Tailwind CSS</li>
+            <li><strong>Backend/Database:</strong> Supabase (PostgreSQL, Auth, Storage)</li>
             <li><strong>i18n:</strong> next-intl (Arabic RTL / English LTR support)</li>
           </ul>
 
@@ -19,7 +19,7 @@ CREATE TABLE profiles (
   id UUID REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY,
   full_name TEXT,
   email TEXT UNIQUE,
-  role TEXT DEFAULT 'user' CHECK (role IN ('user', 'admin')),
+  role TEXT DEFAULT 'user' CHECK (role IN ('user', 'super_admin', 'supervisor', 'employee', 'editor')),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -31,10 +31,12 @@ CREATE TABLE products (
   description_en TEXT,
   description_ar TEXT,
   price DECIMAL(12,2) NOT NULL,
-  stock_quantity INT DEFAULT 0,
+  stock INT DEFAULT 0,
   category_id UUID REFERENCES categories(id),
   image_url TEXT,
   rating_avg DECIMAL(3,2) DEFAULT 0,
+  reviews_count INT DEFAULT 0,
+  status TEXT DEFAULT 'active',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -44,20 +46,15 @@ CREATE TABLE categories (
   name_en TEXT NOT NULL,
   name_ar TEXT NOT NULL,
   display_order INT DEFAULT 0,
+  status TEXT DEFAULT 'active',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- RLS POLICIES
-ALTER TABLE products ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Public Read" ON products FOR SELECT USING (true);
-CREATE POLICY "Admin All" ON products FOR ALL 
-  USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'));`}
+);`}
           </pre>
 
           <h2 style={{ color: '#0055A4', marginTop: '24px' }}>3. Core Features Implementation</h2>
-          <p><strong>Auth & RBAC:</strong> Users are assigned 'user' or 'admin' roles. Middleware checks the role on login to redirect admins to <code>/admin</code>.</p>
-          <p><strong>Notifications:</strong> Database Webhooks trigger Supabase Edge Functions on new orders, sending emails via Resend API.</p>
-          <p><strong>i18n Logic:</strong> Context-based language switching that toggles <code>dir="rtl"</code> and swaps <code>name_en</code> for <code>name_ar</code>.</p>
+          <p><strong>Auth & RBAC:</strong> Users are assigned specific professional roles. Middleware checks the role on login to redirect admins to <code>/admin</code>. Access is secured via JWT app_metadata.</p>
+          <p><strong>Performance:</strong> Aggregated SQL metrics and unstable_cache for high-performance storefront delivery.</p>
+          <p><strong>i18n Logic:</strong> Context-based language switching that toggles <code>dir=&quot;rtl&quot;</code> and swaps <code>name_en</code> for <code>name_ar</code>.</p>
         </div>
       </div>
     </div>

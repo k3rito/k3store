@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { useLoading } from '@/components/providers'
 
@@ -21,11 +21,7 @@ export function ReviewsSystem({ productId, userId }: { productId: string, userId
   const supabase = createClient()
   const { setIsLoading } = useLoading()
 
-  useEffect(() => {
-    fetchReviews()
-  }, [productId])
-
-  const fetchReviews = async () => {
+  const fetchReviews = useCallback(async () => {
     setLoading(true)
     const { data, error } = await supabase
       .from('reviews')
@@ -35,7 +31,11 @@ export function ReviewsSystem({ productId, userId }: { productId: string, userId
     
     if (!error && data) setReviews(data)
     setLoading(false)
-  }
+  }, [productId, supabase])
+
+  useEffect(() => {
+    fetchReviews()
+  }, [fetchReviews])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -68,7 +68,7 @@ export function ReviewsSystem({ productId, userId }: { productId: string, userId
   }
 
   return (
-    <div className="mt-12 space-y-8">
+    <div className="mt-12 space-y-8 font-display antialiased">
       <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
         <h3 className="text-xl font-bold">Customer Reviews ({reviews.length})</h3>
         <div className="flex items-center gap-2">
@@ -112,7 +112,7 @@ export function ReviewsSystem({ productId, userId }: { productId: string, userId
           <button
             type="submit"
             disabled={submitting}
-            className="bg-primary text-white font-bold py-3 px-8 rounded-xl hover:bg-primary/90 transition-all disabled:opacity-50 shadow-lg shadow-primary/20"
+            className="bg-primary text-white font-bold py-3 px-8 rounded-xl hover:bg-primary-dark transition-all disabled:opacity-50 shadow-lg shadow-primary/20"
           >
             {submitting ? 'Submitting...' : 'Post Review'}
           </button>
@@ -134,8 +134,8 @@ export function ReviewsSystem({ productId, userId }: { productId: string, userId
             <div key={review.id} className="border-b border-slate-100 dark:border-slate-800 pb-6 last:border-0">
               <div className="flex justify-between items-start mb-2">
                 <div>
-                  <p className="font-bold text-sm">{review.profiles?.full_name || 'Anonymous'}</p>
-                  <p className="text-[10px] text-slate-400">{new Date(review.created_at).toLocaleDateString()}</p>
+                  <p className="font-bold text-sm text-slate-900 dark:text-white">{review.profiles?.full_name || 'Anonymous'}</p>
+                  <p className="text-[10px] text-slate-400 font-medium">{new Date(review.created_at).toLocaleDateString()}</p>
                 </div>
                 <div className="flex items-center gap-0.5">
                   {[1, 2, 3, 4, 5].map((star) => (
@@ -146,7 +146,7 @@ export function ReviewsSystem({ productId, userId }: { productId: string, userId
                 </div>
               </div>
               <p className="text-slate-600 dark:text-slate-400 text-sm italic leading-relaxed">
-                "{review.comment}"
+                &quot;{review.comment}&quot;
               </p>
             </div>
           ))

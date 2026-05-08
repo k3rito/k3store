@@ -14,10 +14,8 @@ export default function CheckoutPage() {
     const { locale } = useParams<{ locale: string }>()
     const router = useRouter()
     const { setIsLoading } = useLoading()
-    const [user, setUser] = useState<any>(null)
     const [loading, setPageLoading] = useState(true)
 
-    // Form states
     const [formData, setFormData] = useState({
         full_name: '',
         email: '',
@@ -33,7 +31,6 @@ export default function CheckoutPage() {
         async function checkUser() {
             const { data: { user } } = await supabase.auth.getUser()
             if (user) {
-                setUser(user)
                 const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single()
                 if (profile) {
                     setFormData(prev => ({
@@ -85,57 +82,57 @@ export default function CheckoutPage() {
 
             clearCart()
             router.push(`/${locale}/checkout/success?id=${result.orderId}`)
-        } catch (err: any) {
-            alert("Order failed: " + err.message)
+        } catch (err: unknown) {
+            const error = err as Error;
+            alert("Order failed: " + error.message)
         } finally {
             setIsLoading(false)
         }
     }
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-black/95 py-12">
+        <div className="min-h-screen bg-slate-50 dark:bg-black/95 py-12 font-display antialiased">
             <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-2 gap-12">
-                {/* Left: Form */}
                 <div className="space-y-8">
                     <Link href={`/${locale}`} className="inline-flex items-center gap-2 text-primary font-bold hover:underline mb-4">
                         <span className="material-symbols-outlined text-sm">arrow_back</span>
                         Back to Shop
                     </Link>
 
-                    <h1 className="text-4xl font-black tracking-tight">Checkout</h1>
+                    <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white">Checkout</h1>
 
                     <form onSubmit={handleCheckout} className="space-y-6">
                         <section className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm">
-                            <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+                            <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-slate-900 dark:text-white">
                                 <span className="material-symbols-outlined text-primary">local_shipping</span>
                                 Shipping & Professional Information
                             </h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Full Name / Clinic</label>
-                                    <input required value={formData.full_name} onChange={e => setFormData({...formData, full_name: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all" placeholder="John Doe" />
+                                    <input required value={formData.full_name} onChange={e => setFormData({...formData, full_name: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all text-slate-900 dark:text-white" placeholder="John Doe" />
                                 </div>
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Professional Email</label>
-                                    <input required type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all" placeholder="name@hospital.com" />
+                                    <input required type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all text-slate-900 dark:text-white" placeholder="name@hospital.com" />
                                 </div>
                                 <div className="md:col-span-2 space-y-1">
                                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Street Address</label>
-                                    <input required value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all" placeholder="123 Medical District" />
+                                    <input required value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all text-slate-900 dark:text-white" placeholder="123 Medical District" />
                                 </div>
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">City</label>
-                                    <input required value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all" placeholder="Healthcare City" />
+                                    <input required value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all text-slate-900 dark:text-white" placeholder="Healthcare City" />
                                 </div>
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Phone Number</label>
-                                    <input required value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all" placeholder="+1 (555) 000-0000" />
+                                    <input required value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all text-slate-900 dark:text-white" placeholder="+1 (555) 000-0000" />
                                 </div>
                             </div>
                         </section>
 
                         <section className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm">
-                            <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+                            <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-slate-900 dark:text-white">
                                 <span className="material-symbols-outlined text-primary">payments</span>
                                 Payment Method
                             </h2>
@@ -157,7 +154,6 @@ export default function CheckoutPage() {
                     </form>
                 </div>
 
-                {/* Right: Summary */}
                 <div className="lg:sticky lg:top-12 h-fit space-y-6">
                     <section className="bg-slate-900 text-white p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-bl-full pointer-events-none"></div>
@@ -172,9 +168,9 @@ export default function CheckoutPage() {
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <p className="font-bold text-sm truncate">{item.name_en}</p>
-                                            <p className="text-xs text-slate-400">Qty: {item.quantity} × ${unitPrice.toFixed(2)}</p>
+                                            <p className="text-xs text-slate-400">Qty: {item.quantity} &times; ${unitPrice.toFixed(2)}</p>
                                         </div>
-                                        <div className="font-bold text-sm">${(unitPrice * item.quantity).toFixed(2)}</div>
+                                        <div className="font-bold text-sm">${((unitPrice || 0) * item.quantity).toFixed(2)}</div>
                                     </div>
                                 )
                             })}

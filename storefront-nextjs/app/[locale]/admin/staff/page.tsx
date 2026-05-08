@@ -1,9 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import {
-  updateUserRole,
   addStaffMember,
   updateStaffProfile,
   deactivateStaff,
@@ -11,8 +10,14 @@ import {
   AppRole
 } from '../actions';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { Profile } from '@/utils/types';
+
+interface AuditLog {
+    id: string;
+    action: string;
+    created_at: string;
+    profiles?: { full_name: string | null };
+}
 
 const StaffPage = () => {
   const [profiles, setProfiles] = useState<Profile[]>([]);
@@ -20,21 +25,16 @@ const StaffPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedStaff, setSelectedStaff] = useState<Profile | null>(null);
-  const [auditLogs, setAuditLogs] = useState<any[]>([]);
+  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [isAddingStaff, setIsAddingStaff] = useState(false);
   const [newStaffEmail, setNewStaffEmail] = useState('');
   const [newStaffRole, setNewStaffRole] = useState<AppRole>('employee');
   const [currentPage, setCurrentPage] = useState(1);
   const [isActionLoading, setIsActionLoading] = useState(false);
   const itemsPerPage = 8;
-  const router = useRouter();
   const supabase = createClient();
 
-  useEffect(() => {
-    fetchProfiles();
-  }, []);
-
-  const fetchProfiles = async () => {
+  const fetchProfiles = useCallback(async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from('profiles')
@@ -45,14 +45,18 @@ const StaffPage = () => {
       setProfiles(data as Profile[]);
     }
     setLoading(false);
-  };
+  }, [supabase]);
+
+  useEffect(() => {
+    fetchProfiles();
+  }, [fetchProfiles]);
 
   const startLoading = () => setIsActionLoading(true);
   const stopLoading = () => setIsActionLoading(false);
 
   const filteredProfiles = profiles.filter(p =>
     (p.full_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.email.toLowerCase().includes(searchTerm.toLowerCase())
+    (p.email || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const totalPages = Math.ceil(filteredProfiles.length / itemsPerPage);
@@ -62,7 +66,7 @@ const StaffPage = () => {
     setSelectedStaff(staff);
     setIsDrawerOpen(true);
     const logs = await getStaffAuditLogs(staff.id);
-    setAuditLogs(logs || []);
+    setAuditLogs((logs || []) as AuditLog[]);
   };
 
   const handleAddStaff = async (e: React.FormEvent) => {
@@ -74,8 +78,9 @@ const StaffPage = () => {
       setIsAddingStaff(false);
       await fetchProfiles();
       alert("Staff member added successfully");
-    } catch (err: any) {
-      alert(err.message);
+    } catch (err: unknown) {
+      const error = err as Error;
+      alert(error.message);
     } finally {
       stopLoading();
     }
@@ -86,11 +91,12 @@ const StaffPage = () => {
     startLoading();
     try {
       await updateStaffProfile(selectedStaff.id, { status });
-      const updated = { ...selectedStaff, status };
+      const updated = { ...selectedStaff, status: status as "active" | "suspended" };
       setSelectedStaff(updated);
       setProfiles(prev => prev.map(p => p.id === selectedStaff.id ? updated : p));
-    } catch (err: any) {
-      alert(err.message);
+    } catch (err: unknown) {
+      const error = err as Error;
+      alert(error.message);
     } finally {
       stopLoading();
     }
@@ -106,8 +112,9 @@ const StaffPage = () => {
       await deactivateStaff(selectedStaff.id, reason);
       setIsDrawerOpen(false);
       await fetchProfiles();
-    } catch (err: any) {
-      alert(err.message);
+    } catch (err: unknown) {
+      const error = err as Error;
+      alert(error.message);
     } finally {
       stopLoading();
     }
@@ -143,7 +150,7 @@ const StaffPage = () => {
             {[
                 { label: 'Total Personnel', val: profiles.length, icon: 'groups', color: 'text-blue-500' },
                 { label: 'Administrators', val: profiles.filter(p => ['super_admin', 'supervisor'].includes(p.role)).length, icon: 'admin_panel_settings', color: 'text-purple-500' },
-                { label: 'Active Status', val: profiles.filter(p => p.status === 'Active').length, icon: 'check_circle', color: 'text-emerald-500' },
+                { label: 'Active Status', val: profiles.filter(p => p.status === 'active').length, icon: 'check_circle', color: 'text-emerald-500' },
                 { label: 'New This Month', val: profiles.filter(p => new Date(p.created_at).getMonth() === new Date().getMonth()).length, icon: 'neurology', color: 'text-amber-500' }
             ].map(stat => (
                 <div key={stat.label} className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
@@ -208,8 +215,8 @@ const StaffPage = () => {
                       {new Date(staff.created_at).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`inline-flex items-center gap-1.5 text-[10px] font-black uppercase ${staff.status === "Active" ? "text-emerald-500" : "text-red-400"}`}>
-                        <span className={`size-1.5 rounded-full ${staff.status === "Active" ? "bg-green-500" : staff.status === "On Leave" ? "bg-amber-500" : "bg-red-500"}`}></span> {staff.status || "Offline"}
+                      <span className={`inline-flex items-center gap-1.5 text-[10px] font-black uppercase ${staff.status === "active" ? "text-emerald-500" : "text-red-400"}`}>
+                        <span className={`size-1.5 rounded-full ${staff.status === "active" ? "bg-green-500" : false ? "bg-amber-500" : "bg-red-500"}`}></span> {staff.status || "Offline"}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">
@@ -252,7 +259,7 @@ const StaffPage = () => {
                   <div>
                     <div className="flex items-center gap-2 mb-1">
                       <h2 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">{selectedStaff.full_name || "User"}</h2>
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${selectedStaff.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{selectedStaff.status}</span>
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${selectedStaff.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{selectedStaff.status}</span>
                     </div>
                     <p className="text-slate-500 font-medium whitespace-nowrap text-xs uppercase tracking-tight">ID: {selectedStaff.id}</p>
                     <p className="text-primary font-bold text-sm uppercase tracking-widest">{selectedStaff.role.replace(/_/g, ' ')}</p>
@@ -267,15 +274,15 @@ const StaffPage = () => {
             <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-8">
               <div className="grid grid-cols-2 gap-3">
                 <button 
-                  onClick={() => handleUpdateStatus('Active')}
-                  className={`flex items-center justify-center gap-2 p-3 rounded-xl border font-bold text-sm transition-all ${selectedStaff.status === 'Active' ? 'bg-green-50 border-green-200 text-green-700 shadow-sm' : 'hover:bg-slate-50 border-slate-200 text-slate-600'}`}
+                  onClick={() => handleUpdateStatus('active')}
+                  className={`flex items-center justify-center gap-2 p-3 rounded-xl border font-bold text-sm transition-all ${selectedStaff.status === 'active' ? 'bg-green-50 border-green-200 text-green-700 shadow-sm' : 'hover:bg-slate-50 border-slate-200 text-slate-600'}`}
                 >
                   <span className="material-symbols-outlined text-lg">check_circle</span>
                   Set Active
                 </button>
                 <button 
-                  onClick={() => handleUpdateStatus('On Leave')}
-                  className={`flex items-center justify-center gap-2 p-3 rounded-xl border font-bold text-sm transition-all ${selectedStaff.status === 'On Leave' ? 'bg-amber-50 border-amber-200 text-amber-700 shadow-sm' : 'hover:bg-slate-50 border-slate-200 text-slate-600'}`}
+                  onClick={() => handleUpdateStatus('on_leave')}
+                  className={`flex items-center justify-center gap-2 p-3 rounded-xl border font-bold text-sm transition-all ${selectedStaff.status === 'on_leave' ? 'bg-amber-50 border-amber-200 text-amber-700 shadow-sm' : 'hover:bg-slate-50 border-slate-200 text-slate-600'}`}
                 >
                   <span className="material-symbols-outlined text-lg">holiday_village</span>
                   Set On Leave
@@ -299,9 +306,10 @@ const StaffPage = () => {
                         if (error) throw error;
                         alert("Document uploaded successfully!");
                         const logs = await getStaffAuditLogs(selectedStaff.id);
-                        setAuditLogs(logs || []);
-                      } catch (err: any) {
-                        alert("Upload failed: " + err.message);
+                        setAuditLogs((logs || []) as AuditLog[]);
+                      } catch (err: unknown) {
+                        const error = err as Error;
+                        alert("Upload failed: " + error.message);
                       } finally {
                         stopLoading();
                       }
@@ -328,14 +336,14 @@ const StaffPage = () => {
                   <p className="text-xs text-red-600/70 dark:text-red-400/60 font-medium">Temporarily or permanently disable this account.</p>
                 </div>
                 <button onClick={handleDeactivate} className="bg-red-600 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-md shadow-red-200/50 hover:bg-red-700 transition-all">
-                  {selectedStaff.status === 'Deactivated' ? 'Already Disabled' : 'Deactivate'}
+                  {selectedStaff.status === 'suspended' ? 'Already Disabled' : 'Deactivate'}
                 </button>
               </div>
 
               <div className="space-y-4">
                 <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest">Audit Activity Log</h3>
                 <div className="space-y-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-800">
-                  {auditLogs.length > 0 ? auditLogs.map((log: any) => (
+                  {auditLogs.length > 0 ? auditLogs.map((log) => (
                     <div key={log.id} className="flex gap-3 pb-3 border-b border-slate-100 dark:border-slate-800 last:border-0 last:pb-0">
                       <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5"></div>
                       <div>

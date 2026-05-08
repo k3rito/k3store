@@ -197,7 +197,7 @@ export function AddToCartButton({ product, variant = 'icon', className = '' }: {
 export function CartBadge({ onClick }: { onClick: () => void }) {
   const itemCount = useCartStore(s => s.itemCount)
   const [mounted, setMounted] = useState(false)
-  useEffect(() => setMounted(true), [])
+  useEffect(() => { setMounted(true) }, [])
 
   return (
     <button onClick={onClick} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg relative group transition-colors">

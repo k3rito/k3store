@@ -8,7 +8,11 @@ import { Footer } from '@/components/footer'
 
 export const revalidate = 0
 
-// ── SEO generateMetadata ──
+interface PuckData {
+  content: any[];
+  root: Record<string, any>;
+}
+
 export async function generateMetadata(props: { params: Promise<{ locale: string; slug: string }> }): Promise<Metadata> {
     const { slug } = await props.params
     const supabase = await createClient()
@@ -24,15 +28,15 @@ export default async function DynamicPage(props: { params: Promise<{ locale: str
     const { locale, slug } = await props.params
     const supabase = await createClient()
 
-    // Fetch the page by slug (also check custom_slug)
-    let { data: page, error } = await supabase
+    const { data: pageBySlug, error: slugError } = await supabase
         .from('dynamic_pages')
         .select('*')
         .eq('slug', slug)
         .single()
 
-    // Fallback: try custom_slug
-    if (error || !page) {
+    let page = pageBySlug
+
+    if (slugError || !page) {
         const { data: customPage } = await supabase
             .from('dynamic_pages')
             .select('*')
@@ -45,9 +49,15 @@ export default async function DynamicPage(props: { params: Promise<{ locale: str
     const isArabic = locale === 'ar'
     const rawContent = isArabic ? (page.content_ar || page.content) : page.content
 
-    const puckData = rawContent && typeof rawContent === 'object'
-        ? (('content' in rawContent && 'root' in rawContent) ? rawContent : ('content' in (rawContent as any) ? { content: (rawContent as any).content, root: (rawContent as any).root || {} } : { content: [], root: {} }))
-        : { content: [], root: {} }
+    let puckData: PuckData = { content: [], root: {} }
+    if (rawContent && typeof rawContent === 'object') {
+        const obj = rawContent as Record<string, any>
+        if ('content' in obj && 'root' in obj) {
+            puckData = obj as unknown as PuckData
+        } else if ('content' in obj) {
+            puckData = { content: obj.content, root: obj.root || {} }
+        }
+    }
 
     return (
         <div className="flex flex-col min-h-screen">

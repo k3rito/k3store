@@ -9,14 +9,13 @@ import { Footer } from '@/components/footer'
 import { ProductCard } from '@/components/product-card'
 import { CategoryCard } from '@/components/category-card'
 import { GridSkeleton } from '@/components/skeletons'
-import { createClient } from '@/utils/supabase/server'
 import { Product, Category } from '@/utils/types'
 import { Metadata } from 'next'
 import { getCachedSettings } from '@/utils/supabase/queries'
 
 export const revalidate = 0
 
-export async function generateMetadata(props: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+export async function generateMetadata(): Promise<Metadata> {
   const settings = await getCachedSettings()
   const headerTitle = settings['header_title'] || 'MedStore'
   return {
@@ -204,9 +203,6 @@ export default async function Home(props: { params: Promise<{ locale: string }> 
   const { locale } = await props.params;
   const tHome = await getTranslations('Home');
 
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
   return (
     <div className="flex flex-col min-h-screen">
       <Suspense fallback={null}><CartImporter /></Suspense>
@@ -248,10 +244,10 @@ export default async function Home(props: { params: Promise<{ locale: string }> 
           </div>
         </section>
       </main>
-
-      <Footer locale={locale} />
       
-      <MobileBottomBar user={user ? { id: user.id, email: user.email } : null} />
+      <Footer locale={locale} />
+
+      <MobileBottomBar user={null} />
     </div>
   );
 }

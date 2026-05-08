@@ -79,7 +79,7 @@ export default async function ProductDetailPage(props: { params: Promise<{ local
             <div className="mb-8">
               <Link href={`/${locale}/categories/${typedProduct.category_id}`} className="inline-flex items-center gap-2 text-primary font-black text-xs uppercase tracking-[0.2em] hover:opacity-80 mb-4 bg-primary/5 px-4 py-2 rounded-full border border-primary/10">
                 <span className="material-symbols-outlined text-sm">category</span>
-                {isArabic ? (typedProduct.categories?.name_ar || typedProduct.categories?.name_en) : typedProduct.categories?.name_en}
+                {isArabic ? ((Array.isArray(typedProduct.categories) ? typedProduct.categories[0]?.name_ar : typedProduct.categories?.name_ar) || (Array.isArray(typedProduct.categories) ? typedProduct.categories[0]?.name_en : typedProduct.categories?.name_en)) : (Array.isArray(typedProduct.categories) ? typedProduct.categories[0]?.name_en : typedProduct.categories?.name_en)}
               </Link>
               <h1 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white leading-[1.2]">{localName}</h1>
             </div>

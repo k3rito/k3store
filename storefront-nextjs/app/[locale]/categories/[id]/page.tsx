@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 import { Header } from '@/components/header'
@@ -11,7 +10,6 @@ export const revalidate = 0
 
 export default async function CategoryProductsPage(props: { params: Promise<{ locale: string, id: string }> }) {
   const { locale, id } = await props.params
-  const tNav = await getTranslations('Navigation')
 
   const { 
     getCachedCategories, 
@@ -29,14 +27,13 @@ export default async function CategoryProductsPage(props: { params: Promise<{ lo
   }
 
   const products = (allProducts as Product[]).filter((p) => p.category_id === id)
-  const localName = (item: any) => locale === 'ar' ? (item.name_ar || item.name_en) : item.name_en
+  const localName = (item: Category) => locale === 'ar' ? (item.name_ar || item.name_en) : item.name_en
 
   return (
     <div className="flex flex-col min-h-screen">
       <Header locale={locale} />
 
       <main className="flex-grow max-w-7xl mx-auto px-4 py-12 w-full">
-        {/* Category Hero */}
         <div className="mb-12 flex flex-col items-center justify-center text-center bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none"></div>
           {category.image_url ? (
@@ -57,7 +54,6 @@ export default async function CategoryProductsPage(props: { params: Promise<{ lo
           </p>
         </div>
 
-        {/* Product Grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
           {products.length > 0 ? (
             products.map((prod) => (

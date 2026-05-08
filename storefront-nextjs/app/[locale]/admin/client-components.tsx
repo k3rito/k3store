@@ -12,7 +12,6 @@ import {
 import CMSBuilder from './site-settings-tab'
 import { Category, Product, Profile, Order } from '@/utils/types'
 
-// ── Types ──
 type Tab = 'overview' | 'products' | 'categories' | 'settings' | 'users' | 'orders' | 'reviews' | 'cms'
 
 interface AdminLayoutProps {
@@ -35,7 +34,6 @@ interface AdminLayoutProps {
   }
 }
 
-// ── Helper: Site Settings Tab ──
 function SettingsTab({ initialSettings }: { initialSettings: Record<string, string> }) {
   const [settings, setSettings] = useState(initialSettings)
   const [loading, setLoading] = useState(false)
@@ -52,8 +50,9 @@ function SettingsTab({ initialSettings }: { initialSettings: Record<string, stri
         }
       }
       setMessage('Settings updated successfully!')
-    } catch (err: any) {
-      alert(err.message)
+    } catch (err: unknown) {
+      const error = err as Error;
+      alert(error.message)
     } finally {
       setLoading(false)
     }
@@ -62,7 +61,7 @@ function SettingsTab({ initialSettings }: { initialSettings: Record<string, stri
   return (
     <div className="max-w-4xl space-y-8">
       <header>
-        <h2 className="text-2xl font-bold font-[Manrope]">Site Configuration</h2>
+        <h2 className="text-2xl font-bold font-[Manrope] text-slate-900 dark:text-white">Site Configuration</h2>
         <p className="text-slate-500 text-sm">Global branding and marketing settings.</p>
       </header>
 
@@ -70,11 +69,11 @@ function SettingsTab({ initialSettings }: { initialSettings: Record<string, stri
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-1">
             <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Header Title</label>
-            <input value={settings['header_title'] || ''} onChange={e => setSettings({...settings, header_title: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl focus:ring-2 focus:ring-primary/20" />
+            <input value={settings['header_title'] || ''} onChange={e => setSettings({...settings, header_title: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 text-slate-900 dark:text-white" />
           </div>
           <div className="space-y-1">
             <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Hero Image URL</label>
-            <input value={settings['hero_image'] || ''} onChange={e => setSettings({...settings, hero_image: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl focus:ring-2 focus:ring-primary/20" />
+            <input value={settings['hero_image'] || ''} onChange={e => setSettings({...settings, hero_image: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 text-slate-900 dark:text-white" />
             {settings['hero_image'] && (
                 <div className="mt-2 relative h-20 w-40 rounded-xl overflow-hidden border">
                     <Image src={settings['hero_image']} fill className="object-cover" alt="Hero Preview" />
@@ -83,19 +82,19 @@ function SettingsTab({ initialSettings }: { initialSettings: Record<string, stri
           </div>
           <div className="space-y-1 md:col-span-2">
             <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Hero Title</label>
-            <textarea value={settings['hero_title'] || ''} onChange={e => setSettings({...settings, hero_title: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 min-h-[100px]" />
+            <textarea value={settings['hero_title'] || ''} onChange={e => setSettings({...settings, hero_title: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 min-h-[100px] text-slate-900 dark:text-white" />
           </div>
           <div className="space-y-1">
              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Facebook URL</label>
-             <input value={settings['social_facebook'] || ''} onChange={e => setSettings({...settings, social_facebook: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl focus:ring-2 focus:ring-primary/20" />
+             <input value={settings['social_facebook'] || ''} onChange={e => setSettings({...settings, social_facebook: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 text-slate-900 dark:text-white" />
           </div>
           <div className="space-y-1">
              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Instagram URL</label>
-             <input value={settings['social_instagram'] || ''} onChange={e => setSettings({...settings, social_instagram: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl focus:ring-2 focus:ring-primary/20" />
+             <input value={settings['social_instagram'] || ''} onChange={e => setSettings({...settings, social_instagram: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 text-slate-900 dark:text-white" />
           </div>
         </div>
 
-        <div className="pt-4 border-t border-slate-50 flex items-center justify-between">
+        <div className="pt-4 border-t border-slate-50 dark:border-slate-800 flex items-center justify-between">
            {message && <span className="text-emerald-500 text-xs font-bold">{message}</span>}
            <button disabled={loading} className="bg-primary text-white px-8 py-3 rounded-2xl font-bold shadow-lg shadow-primary/20 active:scale-95 transition-all">
              {loading ? 'Saving...' : 'Save Settings'}
@@ -106,7 +105,6 @@ function SettingsTab({ initialSettings }: { initialSettings: Record<string, stri
   )
 }
 
-// ── Main Admin Layout ──
 export function AdminLayout({
   defaultTab,
   locale,
@@ -137,8 +135,9 @@ export function AdminLayout({
           const res = await deleteProduct(id)
           if (!res.success) alert(res.error)
           else router.refresh()
-      } catch (err: any) {
-          alert(err.message)
+      } catch (err: unknown) {
+          const error = err as Error;
+          alert(error.message)
       } finally {
           setIsActionPending(false)
       }
@@ -158,7 +157,6 @@ export function AdminLayout({
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-black flex font-display antialiased">
-      {/* Sidebar */}
       <aside className="w-64 bg-slate-900 text-white flex flex-col sticky top-0 h-screen">
         <div className="p-6 border-b border-white/5 flex items-center gap-3">
           <div className="bg-primary p-2 rounded-xl">
@@ -195,7 +193,6 @@ export function AdminLayout({
         </div>
       </aside>
 
-      {/* Content */}
       <main className="flex-1 p-10 overflow-y-auto">
          {activeTab === 'overview' && (
              <div className="space-y-8">
@@ -213,7 +210,7 @@ export function AdminLayout({
                         <div key={stat.label} className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm">
                             <div className="flex items-center justify-between mb-2">
                                 <span className={`material-symbols-outlined ${stat.color}`}>{stat.icon}</span>
-                                <span className="text-2xl font-black">{stat.val}</span>
+                                <span className="text-2xl font-black text-slate-900 dark:text-white">{stat.val}</span>
                             </div>
                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{stat.label}</p>
                         </div>
@@ -227,7 +224,7 @@ export function AdminLayout({
          {activeTab === 'products' && (
              <div className="space-y-6">
                 <header className="flex items-center justify-between">
-                    <h2 className="text-2xl font-bold font-[Manrope]">Products Management</h2>
+                    <h2 className="text-2xl font-bold font-[Manrope] text-slate-900 dark:text-white">Products Management</h2>
                     <button className="bg-primary text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-primary/20">Add Product</button>
                 </header>
                 <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 overflow-hidden shadow-sm">
@@ -249,10 +246,10 @@ export function AdminLayout({
                                         <div className="size-10 rounded-xl bg-slate-100 dark:bg-slate-800 relative overflow-hidden flex-shrink-0">
                                             {p.image_url && <Image src={p.image_url} fill className="object-cover" alt="" />}
                                         </div>
-                                        <span className="font-bold text-sm truncate max-w-[200px]">{p.name_en}</span>
+                                        <span className="font-bold text-sm truncate max-w-[200px] text-slate-900 dark:text-white">{p.name_en}</span>
                                     </div>
                                 </td>
-                                <td className="px-6 py-4 text-sm font-medium">{p.stock || 0} Units</td>
+                                <td className="px-6 py-4 text-sm font-medium text-slate-700 dark:text-slate-300">{p.stock || 0} Units</td>
                                 <td className="px-6 py-4 text-sm font-bold text-primary">${Number(p.price).toFixed(2)}</td>
                                 <td className="px-6 py-4">
                                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${p.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
@@ -284,7 +281,7 @@ export function AdminLayout({
          {activeTab === 'orders' && (
              <div className="space-y-6">
                 <header>
-                    <h2 className="text-2xl font-bold font-[Manrope]">Orders Overview</h2>
+                    <h2 className="text-2xl font-bold font-[Manrope] text-slate-900 dark:text-white">Orders Overview</h2>
                     <p className="text-slate-500 text-sm">Recent clinical supply orders.</p>
                 </header>
                 <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 overflow-hidden shadow-sm">
@@ -301,13 +298,13 @@ export function AdminLayout({
                         {orders.map(o => (
                             <tr key={o.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
                                 <td className="px-6 py-4">
-                                    <p className="font-bold text-sm truncate uppercase tracking-tighter">ID: {o.id.split('-')[0]}</p>
-                                    <p className="text-xs text-slate-500">{o.customer_name || o.profiles?.full_name || 'Guest'}</p>
+                                    <p className="font-bold text-sm truncate uppercase tracking-tighter text-slate-900 dark:text-white">ID: {o.id.split('-')[0]}</p>
+                                    <p className="text-xs text-slate-500">{o.customer_name || (Array.isArray(o.profiles) ? o.profiles[0]?.full_name : o.profiles?.full_name) || 'Guest'}</p>
                                 </td>
                                 <td className="px-6 py-4 text-sm font-bold text-slate-700 dark:text-slate-200">${o.total_amount?.toLocaleString()}</td>
                                 <td className="px-6 py-4 text-xs text-slate-500 font-medium">{new Date(o.created_at).toLocaleDateString()}</td>
                                 <td className="px-6 py-4">
-                                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${o.status === 'completed' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${o.status === 'delivered' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
                                         {o.status}
                                     </span>
                                 </td>

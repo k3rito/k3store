@@ -2,14 +2,14 @@ import { createClient } from '@/utils/supabase/server'
 import { AdminLayout } from './client-components'
 import { redirect } from 'next/navigation'
 import { getAdminMetrics } from '@/utils/supabase/queries'
-import { Category, Product, Profile, Order } from '@/utils/types'
+import { Category, Product, Profile, Order, AppRole } from '@/utils/types'
 
 export const revalidate = 0
 
 export default async function AdminDashboard(props: { searchParams: Promise<{ tab?: string }>; params: Promise<{ locale: string }> }) {
   const { tab } = await props.searchParams
   const { locale } = await props.params
-  const defaultTab = tab || 'overview'
+  const defaultTab = (tab || 'overview') as 'overview' | 'categories' | 'products' | 'users' | 'settings' | 'cms' | 'orders' | 'reviews'
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -18,7 +18,7 @@ export default async function AdminDashboard(props: { searchParams: Promise<{ ta
     redirect(`/${locale}/login`)
   }
 
-  const userRole = user.app_metadata?.role as any
+  const userRole = (user.app_metadata?.role as AppRole) || 'customer'
   if (!['super_admin', 'supervisor', 'employee', 'editor'].includes(userRole)) {
     redirect(`/${locale}`)
   }
@@ -51,14 +51,14 @@ export default async function AdminDashboard(props: { searchParams: Promise<{ ta
   }, {}) || {}
 
   // Fix Supabase nested profile mapping for types
-  const mappedOrders = (orders || []).map((o: any) => ({
+  const mappedOrders = (orders || []).map((o) => ({
       ...o,
       profiles: Array.isArray(o.profiles) ? o.profiles[0] : o.profiles
-  })) as Order[]
+  })) as unknown as Order[]
 
   return (
     <AdminLayout
-      defaultTab={defaultTab as any}
+      defaultTab={defaultTab}
       locale={locale}
       profile={profile as Profile}
       email={user.email || ''}
@@ -68,7 +68,7 @@ export default async function AdminDashboard(props: { searchParams: Promise<{ ta
       settings={settings}
       dynamicPages={dynamicPages || []}
       orders={mappedOrders}
-      reviews={reviews || []}
+      reviews={(reviews || []).map(r => ({ ...r, profiles: Array.isArray(r.profiles) ? r.profiles[0] : r.profiles, products: Array.isArray(r.products) ? r.products[0] : r.products })) as any}
       metrics={metrics}
     />
   )

@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
@@ -6,8 +5,9 @@ import { MobileBottomBar } from '@/app/[locale]/client-components'
 import { createClient } from '@/utils/supabase/server'
 import { Metadata } from 'next'
 import { getCachedSettings } from '@/utils/supabase/queries'
+import Link from 'next/link'
 
-export async function generateMetadata(props: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+export async function generateMetadata(): Promise<Metadata> {
   const settings = await getCachedSettings()
   const headerTitle = settings['header_title'] || 'MedStore'
   return {
@@ -29,7 +29,6 @@ export default async function B2BPage(props: { params: Promise<{ locale: string 
       <Header locale={locale} />
 
       <main className="flex-grow">
-        {/* B2B Hero */}
         <section className="bg-slate-950 py-24 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] -mr-64 -mt-64 pointer-events-none"></div>
           <div className="max-w-5xl mx-auto px-4 text-center relative z-10">
@@ -48,7 +47,6 @@ export default async function B2BPage(props: { params: Promise<{ locale: string 
           </div>
         </section>
 
-        {/* Benefits Grid */}
         <section className="max-w-7xl mx-auto px-4 py-24">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {[
@@ -61,18 +59,17 @@ export default async function B2BPage(props: { params: Promise<{ locale: string 
                 <div className={`p-4 ${item.color} rounded-2xl w-fit mx-auto mb-6 group-hover:scale-110 transition-transform`}>
                   <span className="material-symbols-outlined text-2xl">{item.icon}</span>
                 </div>
-                <h3 className="font-black text-sm uppercase tracking-wider mb-2">{item.label}</h3>
+                <h3 className="font-black text-sm uppercase tracking-wider mb-2 text-slate-900 dark:text-white">{item.label}</h3>
                 <p className="text-slate-400 text-xs font-medium">{item.desc}</p>
               </div>
             ))}
           </div>
         </section>
 
-        {/* CTA */}
         <section className="max-w-5xl mx-auto px-4 pb-24">
           <div className="bg-primary/5 rounded-[3rem] border border-primary/10 p-12 md:p-20 text-center relative overflow-hidden">
             <div className="absolute top-0 left-0 w-32 h-32 bg-primary/5 rounded-br-full"></div>
-            <h2 className="text-3xl font-black mb-4">{tContact('title')}</h2>
+            <h2 className="text-3xl font-black mb-4 text-slate-900 dark:text-white">{tContact('title')}</h2>
             <p className="text-slate-500 text-lg mb-10 max-w-xl mx-auto leading-relaxed">{tContact('subtitle')}</p>
             <Link href={`/${locale}/contact`} className="inline-flex items-center gap-3 bg-slate-950 text-white font-black px-12 py-4 rounded-2xl hover:bg-slate-900 transition-all shadow-xl shadow-slate-950/20 active:scale-95">
               <span className="material-symbols-outlined text-sm">mail</span>
