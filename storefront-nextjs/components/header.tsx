@@ -11,8 +11,14 @@ export async function Header({ locale }: { locale: string }) {
 
   let userRole = 'user'
   if (user) {
-    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-    if (profile) userRole = profile.role as string
+    // Prioritize app_metadata.role for efficiency and security
+    userRole = (user.app_metadata?.role as string) || 'user'
+
+    // If not in metadata, fallback to DB (e.g., for newly migrated users or profile-only roles)
+    if (userRole === 'user') {
+      const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+      if (profile?.role) userRole = profile.role
+    }
   }
 
   const settings = await getCachedSettings()

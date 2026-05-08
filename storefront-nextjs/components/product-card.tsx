@@ -18,6 +18,9 @@ export async function ProductCard({
   const name = isArabic ? (product.name_ar || product.name_en) : product.name_en
   const desc = isArabic ? (product.description_ar || product.description_en) : product.description_en
 
+  const rating = product.rating_avg ? Math.round(product.rating_avg) : 0
+  const count = product.reviews_count || 0
+
   return (
     <div className="group bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-4 transition-all duration-300 hover:shadow-xl hover:border-primary/20 flex flex-col h-full">
       <Link href={`/${locale}/products/${product.id}`} className="block relative mb-4 aspect-square rounded-xl overflow-hidden bg-slate-50 dark:bg-slate-800">
@@ -42,10 +45,16 @@ export async function ProductCard({
       </Link>
 
       <div className="flex items-center gap-1 mb-2">
-        {[1,2,3,4,5].map((star) => (
-          <span key={star} className={`material-symbols-outlined text-xs ${star <= (Math.round(product.rating_avg || 0) || 5) ? 'text-yellow-400 fill-current' : 'text-slate-300'}`}>star</span>
-        ))}
-        <span className="text-[10px] text-slate-400 ml-1 font-medium">({product.reviews_count || 0})</span>
+        {count > 0 ? (
+          <>
+            {[1,2,3,4,5].map((star) => (
+              <span key={star} className={`material-symbols-outlined text-xs ${star <= rating ? 'text-yellow-400 fill-current' : 'text-slate-300'}`}>star</span>
+            ))}
+            <span className="text-[10px] text-slate-400 ml-1 font-medium">({count})</span>
+          </>
+        ) : (
+          <span className="text-[10px] text-slate-400 font-medium italic">No reviews yet</span>
+        )}
       </div>
 
       <Link href={`/${locale}/products/${product.id}`} className="block group/title mb-1">

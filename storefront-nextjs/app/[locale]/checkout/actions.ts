@@ -2,6 +2,7 @@
 
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { z } from 'zod'
 
 interface CartItemInput {
   id: string
@@ -18,13 +19,23 @@ interface ShippingDetails {
   city: string
 }
 
+const shippingSchema = z.object({
+    full_name: z.string().min(2),
+    phone: z.string().min(5),
+    address: z.string().min(5),
+    city: z.string().min(2)
+})
+
 export async function placeOrder(cartItems: CartItemInput[], shipping: ShippingDetails, isB2B: boolean, paymentMethod: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) throw new Error('You must be logged in to place an order')
 
-  // Calculate total
+  // Validate shipping info
+  shippingSchema.parse(shipping)
+
+  // Calculate total server-side for integrity
   const total = cartItems.reduce((sum, item) => {
     const unitPrice = isB2B && item.wholesale_price ? item.wholesale_price : item.price
     return sum + unitPrice * item.quantity
@@ -36,13 +47,12 @@ export async function placeOrder(cartItems: CartItemInput[], shipping: ShippingD
     .insert({
       user_id: user.id,
       status: 'pending',
-      total,
-      shipping_address: {
-        full_name: shipping.full_name,
-        phone: shipping.phone,
-        address: shipping.address,
-        city: shipping.city,
-      },
+      total_amount: total,
+      is_b2b: isB2B,
+      shipping_address: `${shipping.address}, ${shipping.city}`,
+      customer_name: shipping.full_name,
+      customer_phone: shipping.phone,
+      customer_email: user.email,
       payment_method: paymentMethod,
     })
     .select('id')
@@ -65,7 +75,6 @@ export async function placeOrder(cartItems: CartItemInput[], shipping: ShippingD
 
   if (itemsError) {
     console.error('Order items insertion failed:', itemsError)
-    // Try to cleanup the order
     await supabase.from('orders').delete().eq('id', order.id)
     throw new Error(`Failed to save order items: ${itemsError.message}`)
   }

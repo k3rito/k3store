@@ -1,241 +1,201 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useCartStore } from '@/store/cartStore'
-import { useParams, useRouter } from 'next/navigation'
+import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
-import { placeOrder } from './actions'
+import Image from 'next/image'
+import { createClient } from '@/utils/supabase/client'
 import { useLoading } from '@/components/providers'
+import { placeOrder } from './actions'
 
 export default function CheckoutPage() {
-  const { locale } = useParams<{ locale: string }>()
-  const router = useRouter()
-  const { items, itemCount, cartTotal, isB2B, clearCart } = useCartStore()
-  const { setIsLoading } = useLoading()
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [paymentMethod, setPaymentMethod] = useState('cod') // cod, bank, cheque
-  const [mounted, setMounted] = useState(false)
+    const { items, cartTotal, isB2B, clearCart } = useCartStore()
+    const { locale } = useParams<{ locale: string }>()
+    const router = useRouter()
+    const { setIsLoading } = useLoading()
+    const [user, setUser] = useState<any>(null)
+    const [loading, setPageLoading] = useState(true)
 
-  const [form, setForm] = useState({
-    full_name: '',
-    phone: '',
-    address: '',
-    city: '',
-  })
+    // Form states
+    const [formData, setFormData] = useState({
+        full_name: '',
+        email: '',
+        address: '',
+        city: '',
+        phone: '',
+        payment_method: 'card' as 'card' | 'wire'
+    })
 
-  useEffect(() => setMounted(true), [])
+    const supabase = createClient()
 
-  const getPrice = (item: any) => isB2B && item.wholesale_price ? item.wholesale_price : item.price
+    useEffect(() => {
+        async function checkUser() {
+            const { data: { user } } = await supabase.auth.getUser()
+            if (user) {
+                setUser(user)
+                const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+                if (profile) {
+                    setFormData(prev => ({
+                        ...prev,
+                        full_name: profile.full_name || '',
+                        email: user.email || '',
+                        phone: profile.phone || ''
+                    }))
+                }
+            }
+            setPageLoading(false)
+        }
+        checkUser()
+    }, [supabase])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!form.full_name || !form.phone || !form.address || !form.city) {
-      setError('Please fill in all shipping details.'); return
+    if (loading) return <div className="p-20 text-center font-bold">Verifying healthcare professional session...</div>
+    if (items.length === 0) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center p-4">
+                <span className="material-symbols-outlined text-6xl text-slate-200 mb-4">shopping_cart_off</span>
+                <h1 className="text-2xl font-bold mb-4">Your cart is empty</h1>
+                <Link href={`/${locale}`} className="bg-primary text-white px-8 py-3 rounded-xl font-bold">Return to Store</Link>
+            </div>
+        )
     }
-    setLoading(true); setError(''); setIsLoading(true)
-    try {
-      const result = await placeOrder(
-        items.map(i => ({ id: i.id, name_en: i.name_en, price: i.price, wholesale_price: i.wholesale_price, quantity: i.quantity })),
-        form,
-        isB2B,
-        paymentMethod
-      )
-      clearCart()
-      router.push(`/${locale}/checkout/success?orderId=${result.orderId}`)
-    } catch (err: any) {
-      setError(err?.message || 'Failed to place order. Please try again.')
-    } finally {
-      setLoading(false)
-      setIsLoading(false)
+
+    const handleCheckout = async (e: React.FormEvent) => {
+        e.preventDefault()
+        setIsLoading(true)
+
+        try {
+            const result = await placeOrder(
+                items.map(i => ({
+                    id: i.id,
+                    name_en: i.name_en,
+                    price: i.price,
+                    wholesale_price: i.wholesale_price,
+                    quantity: i.quantity
+                })),
+                {
+                    full_name: formData.full_name,
+                    phone: formData.phone,
+                    address: formData.address,
+                    city: formData.city
+                },
+                isB2B,
+                formData.payment_method
+            )
+
+            clearCart()
+            router.push(`/${locale}/checkout/success?id=${result.orderId}`)
+        } catch (err: any) {
+            alert("Order failed: " + err.message)
+        } finally {
+            setIsLoading(false)
+        }
     }
-  }
 
-  if (!mounted) return null
-
-  if (items.length === 0) {
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-4">
-        <div className="text-center">
-          <span className="material-symbols-outlined text-6xl text-slate-300 mb-4 block">shopping_cart</span>
-          <h2 className="text-2xl font-bold text-slate-600 mb-2">Cart is empty</h2>
-          <p className="text-slate-400 mb-6">Add some products before checking out.</p>
-          <Link href={`/${locale}`} className="px-6 py-3 bg-primary text-white rounded-xl font-bold hover:bg-primary/90 transition-colors">
-            Browse Products
-          </Link>
+        <div className="min-h-screen bg-slate-50 dark:bg-black/95 py-12">
+            <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-2 gap-12">
+                {/* Left: Form */}
+                <div className="space-y-8">
+                    <Link href={`/${locale}`} className="inline-flex items-center gap-2 text-primary font-bold hover:underline mb-4">
+                        <span className="material-symbols-outlined text-sm">arrow_back</span>
+                        Back to Shop
+                    </Link>
+
+                    <h1 className="text-4xl font-black tracking-tight">Checkout</h1>
+
+                    <form onSubmit={handleCheckout} className="space-y-6">
+                        <section className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm">
+                            <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+                                <span className="material-symbols-outlined text-primary">local_shipping</span>
+                                Shipping & Professional Information
+                            </h2>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Full Name / Clinic</label>
+                                    <input required value={formData.full_name} onChange={e => setFormData({...formData, full_name: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all" placeholder="John Doe" />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Professional Email</label>
+                                    <input required type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all" placeholder="name@hospital.com" />
+                                </div>
+                                <div className="md:col-span-2 space-y-1">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Street Address</label>
+                                    <input required value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all" placeholder="123 Medical District" />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">City</label>
+                                    <input required value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all" placeholder="Healthcare City" />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Phone Number</label>
+                                    <input required value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all" placeholder="+1 (555) 000-0000" />
+                                </div>
+                            </div>
+                        </section>
+
+                        <section className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm">
+                            <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+                                <span className="material-symbols-outlined text-primary">payments</span>
+                                Payment Method
+                            </h2>
+                            <div className="grid grid-cols-2 gap-4">
+                                <button type="button" onClick={() => setFormData({...formData, payment_method: 'card'})} className={`p-4 rounded-2xl border-2 flex flex-col items-center gap-2 transition-all ${formData.payment_method === 'card' ? 'border-primary bg-primary/5 text-primary' : 'border-slate-100 dark:border-slate-800 text-slate-400'}`}>
+                                    <span className="material-symbols-outlined text-3xl">credit_card</span>
+                                    <span className="text-xs font-bold">Credit/Debit Card</span>
+                                </button>
+                                <button type="button" onClick={() => setFormData({...formData, payment_method: 'wire'})} className={`p-4 rounded-2xl border-2 flex flex-col items-center gap-2 transition-all ${formData.payment_method === 'wire' ? 'border-primary bg-primary/5 text-primary' : 'border-slate-100 dark:border-slate-800 text-slate-400'}`}>
+                                    <span className="material-symbols-outlined text-3xl">account_balance</span>
+                                    <span className="text-xs font-bold">Bank Transfer (B2B)</span>
+                                </button>
+                            </div>
+                        </section>
+
+                        <button type="submit" className="w-full bg-primary hover:bg-primary-dark text-white py-5 rounded-[2rem] font-black text-lg shadow-xl shadow-primary/20 transition-all transform active:scale-[0.98]">
+                            Complete Secure Purchase
+                        </button>
+                    </form>
+                </div>
+
+                {/* Right: Summary */}
+                <div className="lg:sticky lg:top-12 h-fit space-y-6">
+                    <section className="bg-slate-900 text-white p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-bl-full pointer-events-none"></div>
+                        <h2 className="text-2xl font-black mb-8 relative z-10">Order Summary</h2>
+                        <div className="space-y-6 mb-8 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar relative z-10">
+                            {items.map(item => {
+                                const unitPrice = isB2B && item.wholesale_price ? item.wholesale_price : item.price
+                                return (
+                                    <div key={item.id} className="flex gap-4">
+                                        <div className="size-14 rounded-xl bg-white/10 relative overflow-hidden flex-shrink-0">
+                                            {item.image_url && <Image src={item.image_url} alt={item.name_en} fill className="object-cover" />}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="font-bold text-sm truncate">{item.name_en}</p>
+                                            <p className="text-xs text-slate-400">Qty: {item.quantity} × ${unitPrice.toFixed(2)}</p>
+                                        </div>
+                                        <div className="font-bold text-sm">${(unitPrice * item.quantity).toFixed(2)}</div>
+                                    </div>
+                                )
+                            })}
+                        </div>
+                        <div className="border-t border-white/10 pt-8 space-y-3 relative z-10">
+                            <div className="flex justify-between text-slate-400 text-sm font-medium">
+                                <span>Subtotal</span>
+                                <span>${cartTotal().toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between text-slate-400 text-sm font-medium">
+                                <span>Shipping (Express)</span>
+                                <span className="text-emerald-400 font-bold uppercase tracking-tighter">Calculated at dispatch</span>
+                            </div>
+                            <div className="flex justify-between items-end pt-4 border-t border-white/10">
+                                <span className="font-bold">Total Amount</span>
+                                <span className="text-3xl font-black text-primary-light">${cartTotal().toFixed(2)}</span>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
         </div>
-      </div>
     )
-  }
-
-  return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-sm">
-        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-          <Link href={`/${locale}`} className="flex items-center gap-2 text-primary">
-            <div className="bg-primary p-1.5 rounded-lg text-white">
-              <span className="material-symbols-outlined text-xl">medical_services</span>
-            </div>
-            <span className="font-bold text-lg tracking-tight">Checkout</span>
-          </Link>
-          <Link href={`/${locale}`} className="flex items-center gap-1 text-sm text-primary font-bold hover:underline">
-            <span className="material-symbols-outlined text-sm">arrow_back</span> Continue Shopping
-          </Link>
-        </div>
-      </header>
-
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-
-          {/* ── Left: Shipping Form ── */}
-          <div className="lg:col-span-3">
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-              <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
-                <h2 className="text-lg font-bold flex items-center gap-2">
-                  <span className="material-symbols-outlined text-primary">local_shipping</span> Shipping Details
-                </h2>
-              </div>
-              <form onSubmit={handleSubmit} className="p-6 space-y-5">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Full Name *</label>
-                    <div className="relative">
-                      <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">person</span>
-                      <input required value={form.full_name} onChange={e => setForm({ ...form, full_name: e.target.value })} className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary outline-none text-sm" placeholder="John Doe" />
-                    </div>
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Phone Number *</label>
-                    <div className="relative">
-                      <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">call</span>
-                      <input required value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary outline-none text-sm" placeholder="+1 (555) 123-4567" />
-                    </div>
-                  </div>
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Street Address *</label>
-                  <div className="relative">
-                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">location_on</span>
-                    <input required value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary outline-none text-sm" placeholder="123 Medical Ave, Suite 100" />
-                  </div>
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-sm font-bold text-slate-700 dark:text-slate-300">City *</label>
-                  <div className="relative">
-                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">apartment</span>
-                    <input required value={form.city} onChange={e => setForm({ ...form, city: e.target.value })} className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary outline-none text-sm" placeholder="New York" />
-                  </div>
-                </div>
-                
-                {/* Payment Methods */}
-                <div className="space-y-3 pt-4">
-                  <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Payment Method *</label>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    {[
-                      { id: 'cod', name: 'Cash on Delivery', icon: 'payments' },
-                      { id: 'bank', name: 'Bank Transfer', icon: 'account_balance' },
-                      { id: 'cheque', name: 'Cheque', icon: 'history_edu' },
-                    ].map(method => (
-                      <button
-                        key={method.id}
-                        type="button"
-                        onClick={() => setPaymentMethod(method.id)}
-                        className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all gap-2 ${paymentMethod === method.id 
-                          ? 'border-primary bg-primary/5 text-primary' 
-                          : 'border-slate-100 dark:border-slate-800 hover:border-slate-200 text-slate-500'}`}
-                      >
-                        <span className="material-symbols-outlined">{method.icon}</span>
-                        <span className="text-[10px] font-bold uppercase">{method.name}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {paymentMethod === 'bank' && (
-                  <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl text-blue-800 dark:text-blue-300 text-xs">
-                    <p className="font-bold mb-1">Bank Details:</p>
-                    <p>Bank: MedBank International</p>
-                    <p>Account: 1234-5678-9012 (SWIFT: MEDBXX)</p>
-                  </div>
-                )}
-                
-                {paymentMethod === 'cheque' && (
-                  <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-xl text-amber-800 dark:text-amber-300 text-xs">
-                    <p className="font-bold">Cheque Payment:</p>
-                    <p>Please make cheques payable to "K3 Medical Supplies". Your order will process after cheque clearance.</p>
-                  </div>
-                )}
-
-                {error && (
-                  <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3 flex items-center gap-2 text-red-600 text-sm">
-                    <span className="material-symbols-outlined text-lg">error</span>{error}
-                  </div>
-                )}
-
-                <button type="submit" disabled={loading} className="w-full py-3.5 bg-primary text-white rounded-xl font-bold text-sm hover:bg-primary/90 shadow-lg shadow-primary/25 transition-all disabled:opacity-50 flex items-center justify-center gap-2">
-                  {loading ? (
-                    <><span className="material-symbols-outlined animate-spin text-lg">progress_activity</span> Placing Order...</>
-                  ) : (
-                    <><span className="material-symbols-outlined text-lg">shopping_cart_checkout</span> Place Order — ${cartTotal().toFixed(2)}</>
-                  )}
-                </button>
-              </form>
-            </div>
-          </div>
-
-          {/* ── Right: Order Summary ── */}
-          <div className="lg:col-span-2">
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden sticky top-24">
-              <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
-                <h2 className="text-lg font-bold flex items-center gap-2">
-                  <span className="material-symbols-outlined text-primary">receipt_long</span> Order Summary
-                </h2>
-              </div>
-              <div className="divide-y divide-slate-100 dark:divide-slate-800 max-h-[40vh] overflow-y-auto">
-                {items.map(item => (
-                  <div key={item.id} className="flex items-center gap-3 px-6 py-3">
-                    <div className="size-12 rounded-lg bg-slate-100 dark:bg-slate-800 overflow-hidden flex-shrink-0">
-                      {item.image_url ? (
-                        <img src={item.image_url} alt={item.name_en} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center"><span className="material-symbols-outlined text-slate-300 text-sm">inventory_2</span></div>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold truncate">{item.name_en}</p>
-                      <p className="text-xs text-slate-400">Qty: {item.quantity} × ${getPrice(item).toFixed(2)}</p>
-                    </div>
-                    <span className="text-sm font-bold whitespace-nowrap">${(getPrice(item) * item.quantity).toFixed(2)}</span>
-                  </div>
-                ))}
-              </div>
-              <div className="px-6 py-5 border-t border-slate-200 dark:border-slate-800 space-y-3 bg-slate-50/50">
-                <div className="flex justify-between text-sm">
-                  <span className="text-slate-500">Items ({itemCount()})</span>
-                  <span className="font-bold">${cartTotal().toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-slate-500">Shipping</span>
-                  <span className="text-emerald-600 font-bold">Free</span>
-                </div>
-                <div className="h-px bg-slate-200 dark:bg-slate-700"></div>
-                <div className="flex justify-between">
-                  <span className="text-lg font-bold">Total</span>
-                  <span className="text-xl font-extrabold text-primary">${cartTotal().toFixed(2)}</span>
-                </div>
-                {isB2B && (
-                  <div className="bg-emerald-50 dark:bg-emerald-900/20 p-3 rounded-lg flex items-center gap-2">
-                    <span className="material-symbols-outlined text-emerald-600 text-sm">verified</span>
-                    <span className="text-xs text-emerald-700 font-bold">B2B Wholesale pricing applied</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </div>
-  )
 }

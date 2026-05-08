@@ -1,11 +1,18 @@
 import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
-import { getCachedSettings } from '@/utils/supabase/queries'
+import { getCachedSettings, getCachedCategories } from '@/utils/supabase/queries'
 
 export async function Footer({ locale }: { locale: string }) {
   const tFooter = await getTranslations('Footer')
   const settings = await getCachedSettings()
+  const categories = await getCachedCategories()
   const headerTitle = settings['header_title'] || 'MedStore'
+
+  const socialLinks = [
+    { key: 'social_facebook', icon: 'social_leaderboard', label: 'Facebook' },
+    { key: 'social_instagram', icon: 'linked_camera', label: 'Instagram' },
+    { key: 'social_twitter', icon: 'share', label: 'Twitter' }
+  ].filter(s => settings[s.key])
 
   return (
     <footer className="bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-slate-900 pt-16 pb-8 mt-auto">
@@ -24,10 +31,13 @@ export async function Footer({ locale }: { locale: string }) {
         <div>
           <h4 className="font-bold mb-6">{tFooter('categoriesTitle')}</h4>
           <ul className="space-y-4 text-sm text-slate-500">
-            <li><a className="hover:text-primary transition-colors" href="#">{tFooter('diagnosticEquipment')}</a></li>
-            <li><a className="hover:text-primary transition-colors" href="#">{tFooter('surgicalInstruments')}</a></li>
-            <li><a className="hover:text-primary transition-colors" href="#">{tFooter('dentalCare')}</a></li>
-            <li><a className="hover:text-primary transition-colors" href="#">{tFooter('rehabilitation')}</a></li>
+            {categories.slice(0, 4).map(cat => (
+              <li key={cat.id}>
+                <Link className="hover:text-primary transition-colors" href={`/${locale}/categories/${cat.id}`}>
+                  {locale === 'ar' ? (cat.name_ar || cat.name_en) : cat.name_en}
+                </Link>
+              </li>
+            ))}
           </ul>
         </div>
         <div>
@@ -35,17 +45,14 @@ export async function Footer({ locale }: { locale: string }) {
           <ul className="space-y-4 text-sm text-slate-500">
             <li><Link className="hover:text-primary transition-colors" href={`/${locale}/about`}>{tFooter('aboutUs')}</Link></li>
             <li><Link className="hover:text-primary transition-colors" href={`/${locale}/b2b`}>{tFooter('b2bSolutions')}</Link></li>
-            <li><a className="hover:text-primary transition-colors" href="#">{tFooter('logistics')}</a></li>
             <li><Link className="hover:text-primary transition-colors" href={`/${locale}/contact`}>{tFooter('contactUs')}</Link></li>
           </ul>
         </div>
         <div>
           <h4 className="font-bold mb-6">{tFooter('helpCenterTitle')}</h4>
           <ul className="space-y-4 text-sm text-slate-500">
-            <li><a className="hover:text-primary transition-colors" href="#">{tFooter('trackOrder')}</a></li>
-            <li><a className="hover:text-primary transition-colors" href="#">{tFooter('returnsRefunds')}</a></li>
-            <li><a className="hover:text-primary transition-colors" href="#">{tFooter('certifications')}</a></li>
-            <li><a className="hover:text-primary transition-colors" href="#">{tFooter('termsOfService')}</a></li>
+             {/* If help center routes existed, we'd link them. For now, using real paths or removing '#' links */}
+            <li><Link className="hover:text-primary transition-colors" href={`/${locale}/contact`}>{tFooter('trackOrder')}</Link></li>
           </ul>
         </div>
       </div>
@@ -53,9 +60,18 @@ export async function Footer({ locale }: { locale: string }) {
         <p className="text-slate-400 text-xs">{tFooter('copyright')}</p>
         <div className="flex items-center gap-4">
           <div className="flex gap-4">
-            <span className="material-symbols-outlined text-slate-300 cursor-pointer hover:text-primary">social_leaderboard</span>
-            <span className="material-symbols-outlined text-slate-300 cursor-pointer hover:text-primary">linked_camera</span>
-            <span className="material-symbols-outlined text-slate-300 cursor-pointer hover:text-primary">share</span>
+            {socialLinks.map(social => (
+              <a
+                key={social.key}
+                href={settings[social.key]}
+                aria-label={social.label}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="material-symbols-outlined text-slate-300 hover:text-primary transition-colors"
+              >
+                {social.icon}
+              </a>
+            ))}
           </div>
         </div>
       </div>

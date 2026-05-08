@@ -1,4 +1,3 @@
-import { createClient } from '@/utils/supabase/server'
 import { getTranslations } from 'next-intl/server'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
@@ -6,18 +5,29 @@ import { CategoryCard } from '@/components/category-card'
 import { GridSkeleton } from '@/components/skeletons'
 import { MobileBottomBar } from '@/app/[locale]/client-components'
 import { Suspense } from 'react'
-import { Category } from '@/utils/types'
+import { getCachedCategories, getCachedSettings } from '@/utils/supabase/queries'
+import { createClient } from '@/utils/supabase/server'
+import { Metadata } from 'next'
 
 export const revalidate = 0
 
+export async function generateMetadata(props: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await props.params
+  const settings = await getCachedSettings()
+  const headerTitle = settings['header_title'] || 'MedStore'
+  return {
+    title: `Shop by Category | ${headerTitle}`,
+    description: 'Browse our extensive range of certified medical equipment and supplies.',
+  }
+}
+
 async function CategoriesList({ locale }: { locale: string }) {
-  const supabase = await createClient()
-  const { data: categories } = await supabase.from('categories').select('*').eq('status', 'active').order('display_order')
+  const categories = await getCachedCategories()
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
       {categories && categories.length > 0 ? (
-        (categories as Category[]).map((cat) => (
+        categories.map((cat) => (
           <CategoryCard key={cat.id} category={cat} locale={locale} />
         ))
       ) : (

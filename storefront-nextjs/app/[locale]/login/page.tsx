@@ -5,11 +5,11 @@ import { useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useLoading } from '@/components/providers'
+import Link from 'next/link'
 
 export default function LoginPage() {
   const { locale } = useParams<{ locale: string }>()
   const router = useRouter()
-  const tNav = useTranslations('Navigation')
   const tLogin = useTranslations('Login')
 
   const [email, setEmail] = useState('')
@@ -34,16 +34,12 @@ export default function LoginPage() {
       return
     }
 
-    // Check role for redirect
+    // Check role for redirect from JWT metadata (authoritative)
     const { data: { user } } = await supabase.auth.getUser()
     if (user) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single()
+      const userRole = user.app_metadata?.role
 
-      if (['super_admin', 'supervisor', 'employee', 'editor'].includes(profile?.role)) {
+      if (['super_admin', 'supervisor', 'employee', 'editor'].includes(userRole)) {
         router.push(`/${locale}/admin`)
       } else {
         router.push(`/${locale}`)
@@ -51,33 +47,6 @@ export default function LoginPage() {
       router.refresh()
       setIsLoading(false)
     }
-  }
-
-  async function handleSignup(e: React.MouseEvent) {
-    e.preventDefault()
-    setLoading(true)
-    setError(null)
-
-    const supabase = createClient()
-    const { error: signupError } = await supabase.auth.signUp({ email, password })
-
-    if (signupError) {
-      setError(signupError.message)
-      setLoading(false)
-      return
-    }
-
-    setError(null)
-    // After signup, auto-login
-    const { error: loginError } = await supabase.auth.signInWithPassword({ email, password })
-    if (loginError) {
-      setError('Account created! Please check your email to confirm, then log in.')
-      setLoading(false)
-      return
-    }
-
-    router.push(`/${locale}`)
-    router.refresh()
   }
 
   return (
@@ -149,24 +118,22 @@ export default function LoginPage() {
               <span className="material-symbols-outlined text-sm">login</span>
               {loading ? tLogin('signingIn') : tLogin('signIn')}
             </button>
-            <button 
-              type="button"
-              onClick={handleSignup}
-              disabled={loading}
-              className="w-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+            <Link
+              href={`/${locale}/register`}
+              className="w-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 text-center"
             >
               <span className="material-symbols-outlined text-sm">person_add</span>
               {tLogin('createAccount')}
-            </button>
+            </Link>
           </div>
         </form>
         
         <div className="mt-8 text-center text-xs text-slate-500 font-medium">
           <p>{tLogin('secureLogin')}</p>
-          <a href={`/${locale}`} className="text-primary hover:underline mt-2 inline-flex items-center gap-1">
+          <Link href={`/${locale}`} className="text-primary hover:underline mt-2 inline-flex items-center gap-1">
             <span className="material-symbols-outlined text-[10px]">arrow_back</span>
             {tLogin('returnToStore')}
-          </a>
+          </Link>
         </div>
       </div>
     </div>

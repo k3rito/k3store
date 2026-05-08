@@ -1,92 +1,70 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import Link from 'next/link'
+import React, { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import Link from 'next/link'
+import Image from 'next/image'
 import { createClient } from '@/utils/supabase/client'
 import { useTranslations } from 'next-intl'
 import { CartBadge, CartDrawer } from './cart-components'
+import { ProfileBubble } from '@/components/profile-bubble'
 import { useCartStore } from '@/store/cartStore'
-import ProfileBubble from '@/components/profile-bubble'
 import { useLoading } from '@/components/providers'
 
-// ============= Sidebar / Drawer Component =============
+// ============= Sidebar Drawer (Mobile & Desktop Trigger) =============
 export function SidebarDrawer({ user, userRole }: { user: any; userRole: string }) {
   const [open, setOpen] = useState(false)
   const { locale } = useParams<{ locale: string }>()
   const tNav = useTranslations('Navigation')
-  const { setIsLoading } = useLoading()
+  const supabase = createClient()
   const router = useRouter()
 
   const handleLogout = async () => {
-    setIsLoading(true)
-    const supabase = createClient()
     await supabase.auth.signOut()
+    setOpen(false)
     router.push(`/${locale}/login`)
     router.refresh()
-    setIsLoading(false)
   }
 
   return (
     <>
-      {/* Trigger Button */}
-      <button onClick={() => setOpen(true)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">
+      <button onClick={() => setOpen(true)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
         <span className="material-symbols-outlined">menu</span>
       </button>
 
-      {/* Overlay + Drawer */}
       {open && (
-        <div className="fixed inset-0 z-[100]">
-          {/* Backdrop */}
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setOpen(false)} />
-          
-          {/* Drawer Panel */}
-          <aside className="absolute top-0 left-0 h-full w-72 bg-white dark:bg-slate-900 shadow-2xl border-r border-slate-200 dark:border-slate-800 flex flex-col animate-slide-in-left">
-            {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-slate-800">
-              <Link href={`/${locale}`} onClick={() => setOpen(false)} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-                <div className="bg-primary p-1.5 rounded-lg text-white">
-                  <span className="material-symbols-outlined text-xl">medical_services</span>
-                </div>
-                <span className="font-bold text-primary">MedStore</span>
-              </Link>
-              <button onClick={() => setOpen(false)} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">
+        <div className="fixed inset-0 z-[100] flex">
+          <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => setOpen(false)} />
+          <aside className="relative w-80 bg-white dark:bg-slate-900 h-full shadow-2xl flex flex-col animate-slide-in-left">
+            <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+              <span className="text-xl font-bold text-primary">Menu</span>
+              <button onClick={() => setOpen(false)} className="size-10 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                 <span className="material-symbols-outlined">close</span>
               </button>
             </div>
 
-            {/* Navigation Links */}
-            <nav className="flex-1 p-4 space-y-1">
-              <Link href={`/${locale}`} onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-lg text-primary bg-primary/10 font-bold text-sm">
-                <span className="material-symbols-outlined">home</span>
+            <nav className="flex-1 p-4 space-y-2">
+              <Link href={`/${locale}`} onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-colors font-bold text-sm">
+                <span className="material-symbols-outlined text-primary">home</span>
                 {tNav('home')}
               </Link>
-              <Link href={`/${locale}/categories`} onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 font-medium text-sm transition-colors">
-                <span className="material-symbols-outlined">grid_view</span>
+              <Link href={`/${locale}/categories`} onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-colors font-bold text-sm">
+                <span className="material-symbols-outlined text-primary">grid_view</span>
                 {tNav('categories')}
               </Link>
-              <Link href={`/${locale}/b2b`} onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 font-medium text-sm transition-colors">
-                <span className="material-symbols-outlined">business</span>
+              <Link href={`/${locale}/b2b`} onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-colors font-bold text-sm">
+                <span className="material-symbols-outlined text-primary">business_center</span>
                 {tNav('b2b')}
               </Link>
-              <Link href={`/${locale}/about`} onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 font-medium text-sm transition-colors">
-                <span className="material-symbols-outlined">info</span>
-                {tNav('about')}
-              </Link>
-              <Link href={`/${locale}/contact`} onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 font-medium text-sm transition-colors">
-                <span className="material-symbols-outlined">mail</span>
+              <Link href={`/${locale}/contact`} onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-colors font-bold text-sm">
+                <span className="material-symbols-outlined text-primary">mail</span>
                 {tNav('contact')}
-              </Link>
-              <Link href={`/${locale}/cart`} onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 font-medium text-sm transition-colors">
-                <span className="material-symbols-outlined">shopping_cart</span>
-                {tNav('cart')}
               </Link>
             </nav>
 
-            {/* Footer */}
-            <div className="p-4 border-t border-slate-100 dark:border-slate-800">
+            <div className="p-6 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/30">
               {user ? (
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {['super_admin', 'supervisor', 'employee', 'editor'].includes(userRole) && (
                     <Link href={`/${locale}/admin`} onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 py-2.5 bg-primary/10 text-primary rounded-lg text-sm font-bold">
                       <span className="material-symbols-outlined text-sm">dashboard</span>
@@ -288,8 +266,8 @@ export function ProductSearchBar() {
           </p>
           {results.map(p => (
             <Link key={p.id} href={`/${locale}/products/${p.id}`} onClick={() => { setOpen(false); setQuery(''); }} className="px-4 py-3 flex items-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border-b border-slate-50 dark:border-slate-800/50 last:border-0">
-              <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 overflow-hidden flex-shrink-0">
-                {p.image_url && <img src={p.image_url} className="w-full h-full object-cover" alt="" />}
+              <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 overflow-hidden flex-shrink-0 relative">
+                {p.image_url && <Image src={p.image_url} fill className="object-cover" alt="" />}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-bold truncate">{localName(p)}</p>

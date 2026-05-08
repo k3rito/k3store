@@ -3,7 +3,7 @@ import Image from 'next/image'
 import { getTranslations } from 'next-intl/server'
 import { MobileBottomBar, ProductSearchBar } from './client-components'
 import { CartImporter } from './cart-importer'
-import { Suspense } from 'react'
+import { Suspense, Fragment } from 'react'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import { ProductCard } from '@/components/product-card'
@@ -11,8 +11,19 @@ import { CategoryCard } from '@/components/category-card'
 import { GridSkeleton } from '@/components/skeletons'
 import { createClient } from '@/utils/supabase/server'
 import { Product, Category } from '@/utils/types'
+import { Metadata } from 'next'
+import { getCachedSettings } from '@/utils/supabase/queries'
 
 export const revalidate = 0
+
+export async function generateMetadata(props: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const settings = await getCachedSettings()
+  const headerTitle = settings['header_title'] || 'MedStore'
+  return {
+    title: `${headerTitle} - Professional Medical Equipment`,
+    description: settings['hero_subtitle'] || 'Premium medical e-commerce solution for healthcare professionals.',
+  }
+}
 
 async function HeroSection({ settings, locale }: { settings: Record<string, string>, locale: string }) {
   const tHome = await getTranslations('Home')
@@ -34,7 +45,13 @@ async function HeroSection({ settings, locale }: { settings: Record<string, stri
           <span className="text-primary font-bold tracking-[0.2em] text-xs uppercase mb-4 bg-primary/10 w-fit px-4 py-2 rounded-full border border-primary/20 backdrop-blur-md">
             {tHome('exclusiveOffer')}
           </span>
-          <h2 className="text-4xl md:text-6xl font-black text-white max-w-2xl leading-[1.1] mb-6" dangerouslySetInnerHTML={{ __html: heroTitle.replace(/\n/g, '<br />') }}>
+          <h2 className="text-4xl md:text-6xl font-black text-white max-w-2xl leading-[1.1] mb-6 whitespace-pre-line">
+            {heroTitle.split('\n').map((line: string, i: number) => (
+              <Fragment key={i}>
+                {line}
+                {i < heroTitle.split('\n').length - 1 && <br />}
+              </Fragment>
+            ))}
           </h2>
           <p className="text-slate-300 text-lg mt-4 max-w-lg hidden md:block leading-relaxed mb-10">
             {heroSubtitle}
@@ -129,7 +146,14 @@ async function HomeContent({ locale }: { locale: string }) {
               <span className="material-symbols-outlined text-sm">business</span>
               <span className="text-[10px] font-black uppercase tracking-widest">{tHome('b2bPortal')}</span>
             </div>
-            <h2 className="text-4xl md:text-5xl font-black text-white mb-8 leading-tight" dangerouslySetInnerHTML={{ __html: b2bTitle.replace(/\n/g, '<br />') }}></h2>
+            <h2 className="text-4xl md:text-5xl font-black text-white mb-8 leading-tight whitespace-pre-line">
+              {b2bTitle.split('\n').map((line: string, i: number) => (
+                <Fragment key={i}>
+                  {line}
+                  {i < b2bTitle.split('\n').length - 1 && <br />}
+                </Fragment>
+              ))}
+            </h2>
             <p className="text-slate-400 text-lg mb-10 leading-relaxed">
               {b2bSubtitle}
             </p>
