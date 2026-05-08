@@ -1,5 +1,6 @@
 import { createStaticClient } from '@/utils/supabase/server'
 import { unstable_cache } from 'next/cache'
+import { Product, Category } from '@/utils/types'
 
 /**
  * CACHE TAGS:
@@ -19,7 +20,7 @@ export const getCachedProducts = unstable_cache(
       .order('created_at', { ascending: false })
     
     if (error) throw error
-    return data
+    return data as Product[]
   },
   ['products-list'],
   { tags: ['products'], revalidate: 3600 }
@@ -35,7 +36,7 @@ export const getCachedCategories = unstable_cache(
       .order('display_order', { ascending: true })
     
     if (error) throw error
-    return data
+    return data as Category[]
   },
   ['categories-list'],
   { tags: ['categories'], revalidate: 3600 }
@@ -63,7 +64,7 @@ export const getCachedSettings = unstable_cache(
     const { data, error } = await supabase.from('site_settings').select('*')
     if (error) return {}
     
-    return data.reduce((acc: Record<string, string>, curr: any) => {
+    return data.reduce((acc: Record<string, string>, curr: { key: string, value: string | null }) => {
       acc[curr.key] = curr.value || ''
       return acc
     }, {})

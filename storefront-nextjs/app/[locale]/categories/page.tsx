@@ -1,67 +1,59 @@
 import { createClient } from '@/utils/supabase/server'
-import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
+import { Header } from '@/components/header'
+import { Footer } from '@/components/footer'
+import { CategoryCard } from '@/components/category-card'
+import { GridSkeleton } from '@/components/skeletons'
+import { MobileBottomBar } from '@/app/[locale]/client-components'
+import { Suspense } from 'react'
+import { Category } from '@/utils/types'
 
 export const revalidate = 0
+
+async function CategoriesList({ locale }: { locale: string }) {
+  const supabase = await createClient()
+  const { data: categories } = await supabase.from('categories').select('*').eq('status', 'active').order('display_order')
+
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+      {categories && categories.length > 0 ? (
+        (categories as Category[]).map((cat) => (
+          <CategoryCard key={cat.id} category={cat} locale={locale} />
+        ))
+      ) : (
+        <div className="col-span-full text-center py-24 text-slate-500 bg-white dark:bg-slate-900 rounded-[2rem] border-2 border-dashed border-slate-200 dark:border-slate-800">
+          <span className="material-symbols-outlined text-5xl mb-4 block text-slate-300">category</span>
+          <p className="text-lg font-medium">No categories found.</p>
+        </div>
+      )}
+    </div>
+  )
+}
 
 export default async function CategoriesPage(props: { params: Promise<{ locale: string }> }) {
   const { locale } = await props.params
   const tHome = await getTranslations('Home')
-  const tNav = await getTranslations('Navigation')
 
   const supabase = await createClient()
-  const { data: categories } = await supabase.from('categories').select('*').eq('status', 'active').order('display_order')
-
-  const localName = (item: any) => locale === 'ar' ? (item.name_ar || item.name_en) : item.name_en
+  const { data: { user } } = await supabase.auth.getUser()
 
   return (
-    <div className="min-h-screen bg-background-light dark:bg-background-dark">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-          <Link href={`/${locale}`} className="flex items-center gap-2">
-            <div className="bg-primary p-1.5 rounded-lg text-white">
-              <span className="material-symbols-outlined text-xl">medical_services</span>
-            </div>
-            <span className="text-lg font-bold text-primary">MedStore</span>
-          </Link>
-          <Link href={`/${locale}`} className="text-sm text-primary font-bold hover:underline flex items-center gap-1">
-            <span className="material-symbols-outlined text-sm">arrow_back</span>
-            {tNav('home')}
-          </Link>
-        </div>
-      </header>
+    <div className="flex flex-col min-h-screen">
+      <Header locale={locale} />
 
-      <main className="max-w-7xl mx-auto px-4 py-12">
-        <div className="mb-8">
-          <h1 className="text-3xl font-extrabold">{tHome('shopByCategory')}</h1>
-          <div className="h-1 w-12 bg-primary mt-2"></div>
+      <main className="flex-grow max-w-7xl mx-auto px-4 py-16 w-full">
+        <div className="mb-12">
+          <h1 className="text-4xl font-black mb-3">{tHome('shopByCategory')}</h1>
+          <div className="h-2 w-20 bg-primary rounded-full"></div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {categories && categories.length > 0 ? (
-            categories.map((cat: any) => (
-              <Link href={`/${locale}/categories/${cat.id}`} key={cat.id} className="group cursor-pointer block">
-                <div className="aspect-square rounded-xl overflow-hidden bg-white shadow-sm border border-slate-100 mb-3 group-hover:shadow-md transition-shadow">
-                  {cat.image_url ? (
-                    <img alt={localName(cat)} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src={cat.image_url} />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-slate-50">
-                      <span className="material-symbols-outlined text-4xl text-slate-300">image</span>
-                    </div>
-                  )}
-                </div>
-                <h4 className="font-bold text-center text-sm md:text-base">{localName(cat)}</h4>
-              </Link>
-            ))
-          ) : (
-            <div className="col-span-full text-center py-12 text-slate-500">
-              <span className="material-symbols-outlined text-4xl mb-2 block">category</span>
-              No categories found.
-            </div>
-          )}
-        </div>
+        <Suspense fallback={<GridSkeleton count={8} type="category" />}>
+          <CategoriesList locale={locale} />
+        </Suspense>
       </main>
+
+      <Footer locale={locale} />
+      <MobileBottomBar user={user ? { id: user.id, email: user.email } : null} />
     </div>
   )
 }
